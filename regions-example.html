@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Lesson 6 - Regions Example</title>
+<meta charset="utf-8" />
+<style type="text/css">
+	body, html {
+		height: 100%;
+		width: 100%;
+		margin: 0;
+	}
+	
+	body {
+		font-family: serif;
+		color: black;
+		font-size: large;
+	}
+	
+	#source { 
+		-webkit-flow-into: main;
+		height: 250px;
+		width: 200px;
+		padding: 20px;
+		float: left;
+		background: #58FE99;
+	}
+	
+	.region {  
+		-webkit-flow-from: main;
+		margin: 0 25px 0 0;
+		background: #EEE8AA;
+		padding: 20px;
+	} 
+	
+	#region1, #region2 {
+		width: 20%;
+		height: 50%;
+		display: inline-block;
+	}
+	
+	#workarea {
+		position: relative;
+		padding: 25px;
+	}
+</style>
+</head>
+<body>
+	<div id="source"> 
+	<p>
+		Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vel fringilla nunc. Maecenas elementum finibus libero non tincidunt. Quisque tellus nisl, egestas sit amet lacinia a, euismod id nisi. In iaculis non orci sit amet tempor. Integer pulvinar fringilla porta. Integer molestie quam elit, eget euismod sem porta quis. In hac habitasse platea dictumst. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean et mollis urna. Donec tempus dignissim nunc, ac vulputate neque hendrerit sit amet. Sed suscipit cursus hendrerit. Etiam sollicitudin elit quis tellus consectetur, quis sagittis ipsum aliquet. Nam condimentum pulvinar lorem, at luctus magna tempus id. Sed non nisl quis tortor imperdiet ullamcorper. Nam tortor mi, accumsan nec nisi sed, pellentesque gravida orci.
+
+		Aenean ultrices quam quis felis faucibus, quis bibendum ligula auctor. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Fusce elementum libero nibh, et ullamcorper urna luctus vitae. Ut tempor consequat nisi, et hendrerit ante eleifend a. Pellentesque neque mi, tristique at semper nec, ultrices et sem. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean mollis neque nibh, sed congue ex malesuada sodales. Donec hendrerit lorem quam, ac vehicula neque gravida in. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Proin sollicitudin enim quis ante sollicitudin fringilla. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Aenean varius ex vel leo tincidunt sodales. Praesent finibus magna eget convallis consectetur. Donec congue lobortis vestibulum.
+	</p> 
+	</div> 
+	<div id="workarea">
+		<div id="region1" class="region"></div>
+		<div id="region2" class="region"></div>
+	</div>
+</body>
+</html>
