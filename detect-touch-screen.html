@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Lesson 10 - Detect Touch Screen</title>
+<style type="text/css">
+	#canvas {
+		background-color: dodgerblue;
+		border: 1px solid #d3d3d3;
+	}
+</style>
+<script>
+	document.addEventListener("DOMContentLoaded", init, false);
+	
+	function init() {
+		var canvas = document.getElementById("canvas");
+		if("ontouchstart" in document.documentElement) {
+			canvas.addEventListener("touchstart", detect, false);
+		} else {
+			canvas.addEventListener("mousedown", detect, false);
+		}
+	}
+	
+	function detect() {
+		if("ontouchstart" in document.documentElement) {
+			alert("Touch screen device detected!");
+		} else {
+			alert("No touch screen device detected.");
+		}
+	}
+</script>
+</head>
+<body onload="startup()">
+	<h1>Responding to touch interface</h1>
+	<canvas id="canvas" width="200" height="200">
+	</canvas>
+	<p>Click the box to start touch screen detection.</p>
+</body>
+</html>
