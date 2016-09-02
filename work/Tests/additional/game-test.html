@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Game Test</title>
+<style>
+	canvas {
+		display: block;
+		border: 1px solid #777;
+		width: 50%;
+		margin: auto;
+	}
+</style>
+<script>
+	var Rectangle = (function(){
+		function Rectangle(x, y, width, height, color) {
+			this.x = x;
+			this.y = y;
+			this.width = width;
+			this.height = height;
+			this.color = color;
+		}
+		
+		Rectangle.prototype.move = function(dx, dy, canvas) {
+			if(this.x + dx >= 0 && this.x + dx <= canvas.width - this.width) {
+				this.x += dx;
+			}
+			if(this.y + dy >= 0 && this.y + dy <= canvas.height - this.height) {
+				this.y += dy;
+			}
+		};
+		
+		Rectangle.prototype.render = function(ctx) {
+			ctx.fillStyle = this.color;
+			ctx.fillRect(this.x, this.y, this.width, this.height);
+		};
+		
+		return Rectangle;
+	})();
+	
+	var Snake = (function() {
+		function Snake() {
+			this.elements = [];
+			for(var i = 0; i < arguments.length; i++) {
+				this.elements.push(arguments[i]);
+			}
+		}
+		
+		Snake.prototype.moveRight = function() {
+			var headPosition = this.elements[this.elements.length - 1];
+			var newHead = new Rectangle(headPosition.x + 5, headPosition.y, 5, 5, 'green');
+			this.elements.push(newHead);
+			this.elements.shift();
+			console.log(headPosition);
+		};
+		
+		Snake.prototype.moveDown = function() {
+			var headPosition = this.elements[this.elements.length - 1];
+			var newHead = new Rectangle(headPosition.x, headPosition.y + 5, 5, 5, 'green');
+			this.elements.push(newHead);
+			this.elements.shift();
+			console.log(headPosition);
+		};
+		
+		Snake.prototype.moveLeft = function() {
+			var headPosition = this.elements[this.elements.length - 1];
+			var newHead = new Rectangle(headPosition.x - 5, headPosition.y, 5, 5, 'green');
+			this.elements.push(newHead);
+			this.elements.shift();
+			console.log(headPosition);
+		};
+		
+		Snake.prototype.moveUp = function() {
+			var headPosition = this.elements[this.elements.length - 1];
+			var newHead = new Rectangle(headPosition.x, headPosition.y - 5, 5, 5, 'green');
+			this.elements.push(newHead);
+			this.elements.shift();
+			console.log(headPosition);
+		};
+		
+		Snake.prototype.render = function(ctx) {
+			this.elements.map(function(e) {
+				e.render(ctx);
+			});
+		};
+		
+		return Snake;
+	})();
+	
+	function init() {
+		var canvas = document.getElementById('canv');
+		var ctx = canvas.getContext('2d');
+		
+		var elements = [];
+		var p1 = new Rectangle(10, 10, 5, 5, 'green');
+		var p2 = new Rectangle(15, 10, 5, 5, 'green');
+		var p3 = new Rectangle(20, 10, 5, 5, 'green');
+		var p4 = new Rectangle(25, 10, 5, 5, 'green');
+		var p5 = new Rectangle(30, 10, 5, 5, 'green');
+		var p6 = new Rectangle(35, 10, 5, 5, 'green');
+		var p7 = new Rectangle(40, 10, 5, 5, 'green');
+		var snake = new Snake(p1, p2, p3, p4, p5, p6, p7);
+		elements.push(snake);
+		drawFrame(elements, canvas);
+		
+		window.addEventListener('keydown', movePlayer);
+		
+		function movePlayer(e) {
+			var keyCode = e.keyCode;
+			switch(keyCode) {
+				case 37: snake.moveLeft(); break;
+				case 38: snake.moveUp(); break;
+				case 39: snake.moveRight(); break;
+				case 40: snake.moveDown(); break;
+			}
+			drawFrame(elements, canvas);
+		}
+	}
+	
+	function drawFrame(elements, canvas) {
+		var ctx = canvas.getContext('2d');
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
+		elements.map(function(e){
+			e.render(ctx);
+		});
+	}
+</script>
+</head>
+<body onload="init()">
+	<canvas id="canv">
+		
+	</canvas>
+</body>
+</html>

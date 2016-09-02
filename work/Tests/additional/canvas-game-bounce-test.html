@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>First Canvas Game!</title>
+<style>
+	canvas, button {
+		border: 1px solid #d3d3d3;
+		background: #f1f1f1;
+		margin: 10px auto;
+		display: block;
+	}
+</style>
+</head>
+<body onload="startGame()">
+<script>
+var myGamePiece;
+var myScore;
+var obstacles = [
+	new Component(250, 100, 100, 10, 'tomato'),
+];
+
+function startGame() {
+	myGamePiece = new Component(270, 85, 10, 10, 'dodgerblue');
+	myGameArea.start();
+	myScore = {
+		size: '16px',
+		style: 'Consolas',
+		color: 'black',
+		x: 380,
+		y: 20,
+		text: 'SCORE: 0',
+		value: 0,
+		update: function() {
+			myGameArea.context.font = this.size + ' ' + this.style;
+			myGameArea.context.fillStyle = this.color;
+			myGameArea.context.fillText(this.text, this.x, this.y);
+		}
+	};
+}
+
+var myGameArea = {
+	canvas: document.createElement('canvas'),
+	start: function() {
+		this.canvas.width = 480;
+		this.canvas.height = 360;
+		this.speed = 14;
+		this.context = this.canvas.getContext('2d');
+		document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+		this.frameNo = 0;
+		this.interval = setInterval(updateGameArea, this.speed);
+		this.updateSpeed = function(s) {
+			clearInterval(this.interval);
+			this.speed -= s;
+			this.interval = setInterval(updateGameArea, this.speed);
+		};
+		window.addEventListener('keydown', function(e) {
+			myGameArea.keys = (myGameArea.keys || []);
+			myGameArea.keys[e.keyCode] = true;
+		});
+		window.addEventListener('keyup', function(e) {
+			myGameArea.keys[e.keyCode] = false;
+		});
+	},
+	stop: function() {
+		clearInterval(this.interval);
+	},
+	clear: function() {
+		this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+	}
+};
+
+function Component(x, y, width, height, color) {
+	this.width = width;
+	this.height = height;
+	this.speedX = 0;
+	this.speedY = 0;
+	this.x = x;
+	this.y = y;
+	this.gravity = 0.05;
+	this.gravitySpeed = 0;
+	this.bounce = 0;
+	this.jumped = false;
+	this.isFalling = true;
+	this.update = function() {
+		ctx = myGameArea.context;
+		ctx.fillStyle = color;
+		ctx.fillRect(this.x, this.y, this.width, this.height);
+	};
+	this.newPos = function() {
+		this.gravitySpeed += this.gravity;
+		if (this.gravitySpeed < -10) {
+			this.gravitySpeed = 0;
+		}
+		this.x += this.speedX;
+		this.y += this.speedY + this.gravitySpeed;
+		this.isFalling = this.speedY > 0;
+		this.checkCollisions();
+		this.checkCollisionWithObstacles();
+	};
+	this.checkCollisions = function() {
+		var rockBottom = myGameArea.canvas.height - this.height;
+		if (this.y > rockBottom) {
+			die();
+		}
+		if (this.x < 0) {
+			this.x = myGameArea.canvas.width - 1;
+		}
+		if (this.x > myGameArea.canvas.width) {
+			this.x = 0;
+		}
+	};
+	this.checkCollisionWithObstacles = function() {
+		for(var i = 0; i < obstacles.length; i++) {
+			var obst = obstacles[i];
+			if (this.x + this.width > obst.x && this.x < obst.x + obst.width) {
+				if (this.y > obst.y) {
+					return;
+				}
+				if (this.y > obst.y - obst.height && (this.speedY + this.gravitySpeed > 0)) {
+					this.y = obst.y - obst.height;
+					this.gravitySpeed = -(this.gravitySpeed * this.bounce);
+					this.jumped = false;
+				}
+			}
+		}
+	};
+}
+
+function die() {
+	myGameArea.stop();
+	setTimeout(function() {
+		myGameArea.clear();
+	}, 100);
+	
+	setTimeout(function() {
+		myScore.x = myGameArea.canvas.width / 2 - 70;
+		myScore.y = myGameArea.canvas.height / 2;
+		myScore.size = '30px'
+		myScore.update();
+	}, 100);
+}
+
+function drawResult() {
+	myGameArea.clear();
+}
+
+function everyInterval(n) {
+	if (myGameArea.frameNo % n == 0) {
+		return true;
+	}
+	
+	return false;
+}
+
+function accelerate(n) {
+	myGamePiece.gravity = n;
+}
+
+function updateGameArea() {
+	myGameArea.clear();
+	myGameArea.frameNo++;
+	
+	if (everyInterval(1000)) {
+		myGameArea.updateSpeed(1);
+	}
+	
+	if (myGameArea.frameNo == 1 || everyInterval(100)) {
+		myScore.value++;
+		var y = 0;
+		var height = 10;
+		var minWidth = 100;
+		var maxWidth = 150;
+		var width = Math.floor(Math.random() * (maxWidth - minWidth + 1) + minWidth);
+		var maxX = myGameArea.canvas.width - width;
+		var x = Math.floor(Math.random() * maxX + 1);
+		obstacles.push(new Component(x, y, width, height, 'tomato'));
+	}
+	
+	myGamePiece.speedX = 0;
+	myGamePiece.speedY = 0;
+	if (myGameArea.keys && myGameArea.keys[37]) {
+		myGamePiece.speedX = -5;
+	}
+	if (myGameArea.keys && myGameArea.keys[38] && !myGamePiece.jumped) {
+		accelerate(-7);
+		myGamePiece.jumped = true;
+	} else {
+		accelerate(0.2);
+	}
+	if (myGameArea.keys && myGameArea.keys[39]) {
+		myGamePiece.speedX = 5;
+	}
+	if (myGameArea.keys && myGameArea.keys[40]) {
+		myGamePiece.speedY = 5;
+	}
+	myGamePiece.newPos();
+	myGamePiece.update();
+	for (var i = 0; i < obstacles.length; i++) {
+		if (obstacles[i].y > myGameArea.canvas.height) {
+			obstacles.shift();
+		}
+		obstacles[i].y++;
+		obstacles[i].update();
+	}
+	
+	myScore.text = "SCORE: " + myScore.value;
+	myScore.update();
+}
+</script>
+</body>
+</html>

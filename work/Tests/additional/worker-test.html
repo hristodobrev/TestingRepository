@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Worker Test</title>
+<style>
+	#log {
+		font-family: consolas;
+		background: #050;
+		font-size: 2em;
+	}
+	
+	.hard {
+		color: #0f0;
+	}
+	
+	.medium {
+		color: #0a0;
+	}
+	
+	.easy {
+		color: #060;
+	}
+</style>
+<script>
+	// Try to run the code as it is and then comment the code and uncode the second
+	// section and see the result without the worker
+	var worker = new Worker('worker.js');
+	
+	worker.onmessage = function(e) {
+		var obj = JSON.parse(e.data);
+		console.log(e);
+		var span = '<span class="' + obj.color + '">';
+		document.getElementById('log').innerHTML += span + ' ' + obj.data + ' </span>';
+	};
+	
+	worker.postMessage('drawMatrix');
+	
+	/**
+	function doSomething() {
+		var counter = 0;
+		
+		while(counter < 10) {
+			document.getElementById('log').innerHTML += '<p>' + counter + '</p>';
+			counter++;
+			sleep(1);
+		}
+		
+		function sleep(seconds){
+			var date = new Date().getTime() + (seconds * 1000);
+			while(new Date().getTime() <= date){}
+		}
+	}
+	**/
+</script>
+</head>
+<body onload="if(typeof doSomething == 'function') doSomething()">
+	<input type="text" name="test" placeholder="Try to type something..."/>
+	<div id="log">
+		
+	</div>
+</body>
+</html>

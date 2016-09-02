@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Flexbox and Grid</title>
+<style>
+	div#flexbox {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-around;
+		background: dodgerblue;
+		padding: 1em;
+	}
+	
+	div#flexbox > p {
+		width: 75px;
+		margin: 1em;
+		padding: 1em;
+		color: dodgerblue;
+		background: white;
+		text-align: center;
+	}
+	
+	p::selection {
+		background: rgba(0,0,0,0.2);
+		color: #333;
+	}
+	
+	div#grid {
+		display: -ms-grid;
+		-ms-grid-columns: 100px 150px 300px;
+		-ms-grid-rows: 50px 100px 200px;
+		background: tomato;
+		padding: 1em;
+	}
+	
+	div#grid > p {
+		margin: 1em;
+		padding: 1em;
+		color: tomato;
+		background: white;
+		text-align: center;
+	}
+	
+	#first {
+		-ms-grid-row: 1;
+		-ms-grid-column: 1;
+	}
+	
+	#second {
+		-ms-grid-row: 2;
+		-ms-grid-column: 1;
+	}
+	
+	#third {
+		-ms-grid-row: 3;
+		-ms-grid-column: 3;
+	}
+</style>
+</head>
+<body>
+	<h1>Flexbox</h1>
+	<div id="flexbox">
+		<p>Item 1</p>
+		<p>Item 2</p>
+		<p>Item 3</p>
+		<p>Item 4</p>
+		<p>Item 5</p>
+		<p>Item 6</p>
+	</div>
+	<div id="grid">
+		<p id="first">Item 1</p>
+		<p id="second">Item 2</p>
+		<p id="third">Item 3</p>
+	</div>
+</body>
+</html>

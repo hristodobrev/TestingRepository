@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lesson 10 - Responding to touch interface</title>
+<style>
+	div {
+		background: dodgerblue;
+		margin: auto;
+		width: 500px;
+		min-height: 300px;
+	}
+	
+	@media only screen and (max-width:520px) {
+		div {
+			width: 100%;
+			margin: auto;
+		}
+	}
+</style>
+<script>
+	function startup() {
+		if(!("ontouchstart" in document.documentElement)) {
+			document.getElementById('test').innerText = "Your device does not support touch interface.";
+		}
+		var el = document.getElementById("test");
+		el.addEventListener("gesturechange", function(e){
+			e.preventDefault();
+			el.innerText = "Scale: " + e.scale + ", Rotation: " + e.rotation;
+		}, false);
+	}
+</script>
+</head>
+<body onload="startup()">
+	<h1>Responding to touch interface</h1>
+	<div id="test">
+		
+	</div>
+</body>
+</html>

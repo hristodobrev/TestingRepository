@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Watching your position</title>
+<script>
+	function initiate(){
+		navigator.geolocation.getCurrentPosition(printPosition);
+		navigator.geolocation.watchPosition(printPosition);
+	}
+	
+	function printPosition(pos) {
+		var result = document.getElementById("result");
+		result.innerHTML = "Latitude: " + pos.coords.latitude + "<br>Longitude: " + pos.coords.longitude;
+		console.log("Position Changed!");
+	}
+</script>
+</head>
+<body>
+	<h1>Watching your position...</h1>
+	<button onclick="initiate()">button</button>
+	<p id="result">Your Position:</p>
+</body>
+</html>

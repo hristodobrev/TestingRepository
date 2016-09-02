@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>AJAX Requests</title>
+</head>
+<body>
+	<h1>AJAX</h1>
+	<button type="button" onclick="loadDoc()">Request data</button>
+	<div id="demo"></div>
+	
+	<script>
+		function loadDoc() {
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function() {
+				if(xhttp.readyState == 4 && xhttp.status == 200) {
+					document.getElementById('demo').innerHTML = xhttp.responseText;
+				}
+			};
+			
+			xhttp.open('GET', 'ajax_test.txt', true);
+			xhttp.send();
+		}
+	</script>
+</body>
+</html>

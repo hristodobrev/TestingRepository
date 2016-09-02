@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Words Counter</title>
+<script>
+	Array.prototype.getUnique = function(){
+	   let a = [];
+	   let repeatedWords = [];
+	   let repeats = 0;
+	   for(let i = 0, l = this.length; i < l; ++i){
+			if(a.indexOf(this[i]) == -1) {
+				a.push(this[i]);
+			} else {
+				repeatedWords.push(this[i]);
+				repeats++;
+			}
+		}
+		
+		a.repeats = repeats;
+		a.repeatedWords = repeatedWords;
+		return a;
+	}
+	
+	function countWords() {
+		let words = document.getElementById('words').value;
+		let result = document.getElementById('result');
+		let repeatedWords = document.getElementById('repeated-words');
+		
+		let count = words.split(/[, ]+/);
+		count = count.getUnique();
+		
+		result.innerText = count.length + ' [' + count.repeats + ' repeats]';
+		repeatedWords.innerText = 'Repeated words: ' + count.repeatedWords;
+		console.log(count);
+	}
+</script>
+</head>
+<body>
+	<form>
+		<textarea placeholder="Enter your words here..." rows="10" cols="50" id="words"></textarea>
+		<button onclick="countWords()" type="button">Count</button>
+	</form>
+	<p id="result"></p>
+	<p id="repeated-words"></p>
+</body>
+</html>
