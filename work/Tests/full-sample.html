@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Example</title>
+<script src="jquery-3.1.0.js"></script>
+<style>
+	ul > li {
+		list-style-type: none;
+	}
+	
+	ul > li:before {
+		display: inline-block;
+		content: ' ';
+		border-left: 3px solid dodgerblue;
+		border-top: 3px solid transparent;
+		border-bottom: 3px solid transparent;
+		margin-right: 5px;
+		vertical-align: center;
+	}
+</style>
+</head>
+<body>
+	<header>
+		<h1>Main Heading</h1>
+	</header>
+	<main>
+		Here comes the main content
+		<ul>
+			<li>Item 1</li>
+			<li>Item 2</li>
+			<li>Item 3</li>
+		</ul>
+	</main>
+	<footer>
+		<p>Copyright &copy; 2016</p>
+	</footer>
+</body>
+</html>
