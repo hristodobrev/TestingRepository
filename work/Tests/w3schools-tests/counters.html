@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>CSS Counters</title>
+<style>
+	body {
+		counter-reset: h1c h2c;
+	}
+	
+	h1 {
+		counter-increment: h1c;
+	}
+	
+	h2 {
+		counter-increment: h2c;
+	}
+	
+	p#counters::before {
+		content: "h1 counts: " counters(h1c, ", ") ", h2 counts: " counters(h2c, ", ");
+	}
+	
+</style>
+</head>
+<body>
+	<hgroup>
+		<h1>This is heading</h1>
+		<h2>This is subheading</h2>
+	</hgroup>
+	<section>
+		<article>
+			<h1>Article 1 Title</h1>
+			<h2>Article 1 SubTitle</h2>
+			<p>Some text of the first article...</p>
+			<footer>Created by Gogo</footer>
+		</article>
+		<article>
+			<h1>Article 2 Title</h1>
+			<h2>Article 2 SubTitle</h2>
+			<p>Some text of the second article...</p>
+			<footer>Created by Mariika</footer>
+		</article>
+		<article>
+			<h1>Article 3 Title</h1>
+			<h2>Article 3 SubTitle</h2>
+			<h2>Article 3 SubTitle 2</h2>
+			<p>Some text of the third article...</p>
+			<footer>Created by Pesho</footer>
+		</article>
+	</section>
+	<aside>
+		<p id="counters"></p>
+	</aside>
+	<footer><small>Copyright &copy; 2016</small></footer>
+</body>
+</html>

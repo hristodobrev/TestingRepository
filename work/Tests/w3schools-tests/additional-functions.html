@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Additional Functions</title>
+<script>
+	Number.prototype.power = function(pow) {
+		return this ** pow;
+	};
+	var x = 5;
+	console.log(x.power(3));
+	
+	var Person = (function Person(){
+		function Person(firstName, lastName, age) {
+			this._firstName = firstName;
+			this._lastName = lastName;
+			this._age = age;
+		}
+		
+		return Person;
+	})();
+	
+	
+</script>
+</head>
+<body>
+	
+</body>
+</html>

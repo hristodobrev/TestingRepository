@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Responsive Design</title>
+<style>
+	body {
+		margin: 0;
+		font-family: Verdana, sans-serif;
+	}
+	
+	main, header, footer {
+		width: 80%;
+		padding: 1%;
+		margin: auto;
+		background: #ddd;
+	}
+	
+	@media only screen and (max-width: 500px) {
+		main, header, footer {
+			width: 90%;
+			padding: 5%;
+		}
+	}
+</style>
+</head>
+<body>
+	<header>
+		<nav>
+			<ul id="navbar">
+				<li><a href="#home" class="active">Home</a></li>
+				<li><a href="#news">News</a></li>
+				<li><a href="#content">Content</a></li>
+				<li><a href="#about">About</a></li>
+			</ul>
+		</nav>
+	</header>
+	<main>
+		<h2>Responsive Sidenav Example</h2>
+	    <p>This example use media queries to transform the sidenav to a top navigation bar when the screen size is 600px or less.</p>
+	    <p>We have also added a media query for screens that are 400px or less, which will vertically stack and center the navigation links.</p>
+	    <p>You will learn more about media queries and responsive web design later in our CSS Tutorial.</p>
+	    <h4>Resize the browser window to see the effect.</h4>
+		<p>Proin neque augue, ultrices eu mattis eu, ultricies vitae ligula. Suspendisse ac tempus arcu. Aenean nisi massa, dignissim a convallis nec, vulputate at ante. Vivamus tincidunt mauris id lectus ultrices, quis cursus orci cursus. Aenean id turpis vestibulum, iaculis ligula eget, imperdiet est. Donec ac dignissim velit. Morbi egestas mollis commodo. Nulla ex felis, tincidunt non vestibulum sed, pretium at nunc. Suspendisse rutrum massa enim, id faucibus odio finibus vitae. Integer congue eros a nisl finibus interdum. Pellentesque nec lorem hendrerit mi viverra tempus eu et neque. Nunc hendrerit arcu massa, vel convallis nisl laoreet at. Morbi pulvinar diam erat, sit amet faucibus diam venenatis ac. Vestibulum in dolor non sem efficitur congue placerat ac ex. Vivamus accumsan ultrices massa, ut placerat lectus dapibus eget.</p>
+		<p>Nam non arcu a magna rutrum aliquam. Phasellus maximus in urna sit amet auctor. Vivamus bibendum arcu facilisis velit condimentum porttitor. Vestibulum viverra metus massa, bibendum cursus est semper eu. Nullam in lacus hendrerit, varius augue a, viverra dolor. Praesent eget risus non mi ullamcorper euismod in vel est. Aenean laoreet lacus sem, ac lacinia justo iaculis tincidunt. Aenean sollicitudin accumsan convallis. Mauris eu sollicitudin est. Donec placerat congue enim at scelerisque. Ut volutpat enim orci, a aliquet mi porttitor luctus. Nulla at mi sed tellus auctor ultricies non vel orci. Donec iaculis justo nibh, et tempus risus rutrum et. Quisque eget feugiat enim, vel iaculis neque. Donec pharetra, diam id pulvinar hendrerit, ligula elit aliquet nibh, eget volutpat lorem nisi sagittis urna.</p>
+		<h2>Lorem Ipsum</h2>
+		<p>Nam non arcu a magna rutrum aliquam. Phasellus maximus in urna sit amet auctor. Vivamus bibendum arcu facilisis velit condimentum porttitor. Vestibulum viverra metus massa, bibendum cursus est semper eu. Nullam in lacus hendrerit, varius augue a, viverra dolor. Praesent eget risus non mi ullamcorper euismod in vel est. Aenean laoreet lacus sem, ac lacinia justo iaculis tincidunt. Aenean sollicitudin accumsan convallis. Mauris eu sollicitudin est. Donec placerat congue enim at scelerisque. Ut volutpat enim orci, a aliquet mi porttitor luctus. Nulla at mi sed tellus auctor ultricies non vel orci. Donec iaculis justo nibh, et tempus risus rutrum et. Quisque eget feugiat enim, vel iaculis neque. Donec pharetra, diam id pulvinar hendrerit, ligula elit aliquet nibh, eget volutpat lorem nisi sagittis urna.</p>
+		<h2>Responsive Sidenav Example</h2>
+	    <p>This example use media queries to transform the sidenav to a top navigation bar when the screen size is 600px or less.</p>
+	    <p>We have also added a media query for screens that are 400px or less, which will vertically stack and center the navigation links.</p>
+	    <p>You will learn more about media queries and responsive web design later in our CSS Tutorial.</p>
+	    <h4>Resize the browser window to see the effect.</h4>
+		<p>Proin neque augue, ultrices eu mattis eu, ultricies vitae ligula. Suspendisse ac tempus arcu. Aenean nisi massa, dignissim a convallis nec, vulputate at ante. Vivamus tincidunt mauris id lectus ultrices, quis cursus orci cursus. Aenean id turpis vestibulum, iaculis ligula eget, imperdiet est. Donec ac dignissim velit. Morbi egestas mollis commodo. Nulla ex felis, tincidunt non vestibulum sed, pretium at nunc. Suspendisse rutrum massa enim, id faucibus odio finibus vitae. Integer congue eros a nisl finibus interdum. Pellentesque nec lorem hendrerit mi viverra tempus eu et neque. Nunc hendrerit arcu massa, vel convallis nisl laoreet at. Morbi pulvinar diam erat, sit amet faucibus diam venenatis ac. Vestibulum in dolor non sem efficitur congue placerat ac ex. Vivamus accumsan ultrices massa, ut placerat lectus dapibus eget.</p>
+		<p>Nam non arcu a magna rutrum aliquam. Phasellus maximus in urna sit amet auctor. Vivamus bibendum arcu facilisis velit condimentum porttitor. Vestibulum viverra metus massa, bibendum cursus est semper eu. Nullam in lacus hendrerit, varius augue a, viverra dolor. Praesent eget risus non mi ullamcorper euismod in vel est. Aenean laoreet lacus sem, ac lacinia justo iaculis tincidunt. Aenean sollicitudin accumsan convallis. Mauris eu sollicitudin est. Donec placerat congue enim at scelerisque. Ut volutpat enim orci, a aliquet mi porttitor luctus. Nulla at mi sed tellus auctor ultricies non vel orci. Donec iaculis justo nibh, et tempus risus rutrum et. Quisque eget feugiat enim, vel iaculis neque. Donec pharetra, diam id pulvinar hendrerit, ligula elit aliquet nibh, eget volutpat lorem nisi sagittis urna.</p>
+		<h2>Lorem Ipsum</h2>
+		<p>Nam non arcu a magna rutrum aliquam. Phasellus maximus in urna sit amet auctor. Vivamus bibendum arcu facilisis velit condimentum porttitor. Vestibulum viverra metus massa, bibendum cursus est semper eu. Nullam in lacus hendrerit, varius augue a, viverra dolor. Praesent eget risus non mi ullamcorper euismod in vel est. Aenean laoreet lacus sem, ac lacinia justo iaculis tincidunt. Aenean sollicitudin accumsan convallis. Mauris eu sollicitudin est. Donec placerat congue enim at scelerisque. Ut volutpat enim orci, a aliquet mi porttitor luctus. Nulla at mi sed tellus auctor ultricies non vel orci. Donec iaculis justo nibh, et tempus risus rutrum et. Quisque eget feugiat enim, vel iaculis neque. Donec pharetra, diam id pulvinar hendrerit, ligula elit aliquet nibh, eget volutpat lorem nisi sagittis urna.</p>
+		<h2>Responsive Sidenav Example</h2>
+	    <p>This example use media queries to transform the sidenav to a top navigation bar when the screen size is 600px or less.</p>
+	    <p>We have also added a media query for screens that are 400px or less, which will vertically stack and center the navigation links.</p>
+	    <p>You will learn more about media queries and responsive web design later in our CSS Tutorial.</p>
+	    <h4>Resize the browser window to see the effect.</h4>
+		<p>Proin neque augue, ultrices eu mattis eu, ultricies vitae ligula. Suspendisse ac tempus arcu. Aenean nisi massa, dignissim a convallis nec, vulputate at ante. Vivamus tincidunt mauris id lectus ultrices, quis cursus orci cursus. Aenean id turpis vestibulum, iaculis ligula eget, imperdiet est. Donec ac dignissim velit. Morbi egestas mollis commodo. Nulla ex felis, tincidunt non vestibulum sed, pretium at nunc. Suspendisse rutrum massa enim, id faucibus odio finibus vitae. Integer congue eros a nisl finibus interdum. Pellentesque nec lorem hendrerit mi viverra tempus eu et neque. Nunc hendrerit arcu massa, vel convallis nisl laoreet at. Morbi pulvinar diam erat, sit amet faucibus diam venenatis ac. Vestibulum in dolor non sem efficitur congue placerat ac ex. Vivamus accumsan ultrices massa, ut placerat lectus dapibus eget.</p>
+		<p>Nam non arcu a magna rutrum aliquam. Phasellus maximus in urna sit amet auctor. Vivamus bibendum arcu facilisis velit condimentum porttitor. Vestibulum viverra metus massa, bibendum cursus est semper eu. Nullam in lacus hendrerit, varius augue a, viverra dolor. Praesent eget risus non mi ullamcorper euismod in vel est. Aenean laoreet lacus sem, ac lacinia justo iaculis tincidunt. Aenean sollicitudin accumsan convallis. Mauris eu sollicitudin est. Donec placerat congue enim at scelerisque. Ut volutpat enim orci, a aliquet mi porttitor luctus. Nulla at mi sed tellus auctor ultricies non vel orci. Donec iaculis justo nibh, et tempus risus rutrum et. Quisque eget feugiat enim, vel iaculis neque. Donec pharetra, diam id pulvinar hendrerit, ligula elit aliquet nibh, eget volutpat lorem nisi sagittis urna.</p>
+		<h2>Lorem Ipsum</h2>
+		<p>Nam non arcu a magna rutrum aliquam. Phasellus maximus in urna sit amet auctor. Vivamus bibendum arcu facilisis velit condimentum porttitor. Vestibulum viverra metus massa, bibendum cursus est semper eu. Nullam in lacus hendrerit, varius augue a, viverra dolor. Praesent eget risus non mi ullamcorper euismod in vel est. Aenean laoreet lacus sem, ac lacinia justo iaculis tincidunt. Aenean sollicitudin accumsan convallis. Mauris eu sollicitudin est. Donec placerat congue enim at scelerisque. Ut volutpat enim orci, a aliquet mi porttitor luctus. Nulla at mi sed tellus auctor ultricies non vel orci. Donec iaculis justo nibh, et tempus risus rutrum et. Quisque eget feugiat enim, vel iaculis neque. Donec pharetra, diam id pulvinar hendrerit, ligula elit aliquet nibh, eget volutpat lorem nisi sagittis urna.</p>
+		<h2>Responsive Sidenav Example</h2>
+	    <p>This example use media queries to transform the sidenav to a top navigation bar when the screen size is 600px or less.</p>
+	    <p>We have also added a media query for screens that are 400px or less, which will vertically stack and center the navigation links.</p>
+	    <p>You will learn more about media queries and responsive web design later in our CSS Tutorial.</p>
+	    <h4>Resize the browser window to see the effect.</h4>
+		<p>Proin neque augue, ultrices eu mattis eu, ultricies vitae ligula. Suspendisse ac tempus arcu. Aenean nisi massa, dignissim a convallis nec, vulputate at ante. Vivamus tincidunt mauris id lectus ultrices, quis cursus orci cursus. Aenean id turpis vestibulum, iaculis ligula eget, imperdiet est. Donec ac dignissim velit. Morbi egestas mollis commodo. Nulla ex felis, tincidunt non vestibulum sed, pretium at nunc. Suspendisse rutrum massa enim, id faucibus odio finibus vitae. Integer congue eros a nisl finibus interdum. Pellentesque nec lorem hendrerit mi viverra tempus eu et neque. Nunc hendrerit arcu massa, vel convallis nisl laoreet at. Morbi pulvinar diam erat, sit amet faucibus diam venenatis ac. Vestibulum in dolor non sem efficitur congue placerat ac ex. Vivamus accumsan ultrices massa, ut placerat lectus dapibus eget.</p>
+		<p>Nam non arcu a magna rutrum aliquam. Phasellus maximus in urna sit amet auctor. Vivamus bibendum arcu facilisis velit condimentum porttitor. Vestibulum viverra metus massa, bibendum cursus est semper eu. Nullam in lacus hendrerit, varius augue a, viverra dolor. Praesent eget risus non mi ullamcorper euismod in vel est. Aenean laoreet lacus sem, ac lacinia justo iaculis tincidunt. Aenean sollicitudin accumsan convallis. Mauris eu sollicitudin est. Donec placerat congue enim at scelerisque. Ut volutpat enim orci, a aliquet mi porttitor luctus. Nulla at mi sed tellus auctor ultricies non vel orci. Donec iaculis justo nibh, et tempus risus rutrum et. Quisque eget feugiat enim, vel iaculis neque. Donec pharetra, diam id pulvinar hendrerit, ligula elit aliquet nibh, eget volutpat lorem nisi sagittis urna.</p>
+		<h2>Lorem Ipsum</h2>
+		<p>Nam non arcu a magna rutrum aliquam. Phasellus maximus in urna sit amet auctor. Vivamus bibendum arcu facilisis velit condimentum porttitor. Vestibulum viverra metus massa, bibendum cursus est semper eu. Nullam in lacus hendrerit, varius augue a, viverra dolor. Praesent eget risus non mi ullamcorper euismod in vel est. Aenean laoreet lacus sem, ac lacinia justo iaculis tincidunt. Aenean sollicitudin accumsan convallis. Mauris eu sollicitudin est. Donec placerat congue enim at scelerisque. Ut volutpat enim orci, a aliquet mi porttitor luctus. Nulla at mi sed tellus auctor ultricies non vel orci. Donec iaculis justo nibh, et tempus risus rutrum et. Quisque eget feugiat enim, vel iaculis neque. Donec pharetra, diam id pulvinar hendrerit, ligula elit aliquet nibh, eget volutpat lorem nisi sagittis urna.</p>
+		<h2>Responsive Sidenav Example</h2>
+	    <p>This example use media queries to transform the sidenav to a top navigation bar when the screen size is 600px or less.</p>
+	    <p>We have also added a media query for screens that are 400px or less, which will vertically stack and center the navigation links.</p>
+	    <p>You will learn more about media queries and responsive web design later in our CSS Tutorial.</p>
+	    <h4>Resize the browser window to see the effect.</h4>
+		<p>Proin neque augue, ultrices eu mattis eu, ultricies vitae ligula. Suspendisse ac tempus arcu. Aenean nisi massa, dignissim a convallis nec, vulputate at ante. Vivamus tincidunt mauris id lectus ultrices, quis cursus orci cursus. Aenean id turpis vestibulum, iaculis ligula eget, imperdiet est. Donec ac dignissim velit. Morbi egestas mollis commodo. Nulla ex felis, tincidunt non vestibulum sed, pretium at nunc. Suspendisse rutrum massa enim, id faucibus odio finibus vitae. Integer congue eros a nisl finibus interdum. Pellentesque nec lorem hendrerit mi viverra tempus eu et neque. Nunc hendrerit arcu massa, vel convallis nisl laoreet at. Morbi pulvinar diam erat, sit amet faucibus diam venenatis ac. Vestibulum in dolor non sem efficitur congue placerat ac ex. Vivamus accumsan ultrices massa, ut placerat lectus dapibus eget.</p>
+		<p>Nam non arcu a magna rutrum aliquam. Phasellus maximus in urna sit amet auctor. Vivamus bibendum arcu facilisis velit condimentum porttitor. Vestibulum viverra metus massa, bibendum cursus est semper eu. Nullam in lacus hendrerit, varius augue a, viverra dolor. Praesent eget risus non mi ullamcorper euismod in vel est. Aenean laoreet lacus sem, ac lacinia justo iaculis tincidunt. Aenean sollicitudin accumsan convallis. Mauris eu sollicitudin est. Donec placerat congue enim at scelerisque. Ut volutpat enim orci, a aliquet mi porttitor luctus. Nulla at mi sed tellus auctor ultricies non vel orci. Donec iaculis justo nibh, et tempus risus rutrum et. Quisque eget feugiat enim, vel iaculis neque. Donec pharetra, diam id pulvinar hendrerit, ligula elit aliquet nibh, eget volutpat lorem nisi sagittis urna.</p>
+		<h2>Lorem Ipsum</h2>
+		<p>Nam non arcu a magna rutrum aliquam. Phasellus maximus in urna sit amet auctor. Vivamus bibendum arcu facilisis velit condimentum porttitor. Vestibulum viverra metus massa, bibendum cursus est semper eu. Nullam in lacus hendrerit, varius augue a, viverra dolor. Praesent eget risus non mi ullamcorper euismod in vel est. Aenean laoreet lacus sem, ac lacinia justo iaculis tincidunt. Aenean sollicitudin accumsan convallis. Mauris eu sollicitudin est. Donec placerat congue enim at scelerisque. Ut volutpat enim orci, a aliquet mi porttitor luctus. Nulla at mi sed tellus auctor ultricies non vel orci. Donec iaculis justo nibh, et tempus risus rutrum et. Quisque eget feugiat enim, vel iaculis neque. Donec pharetra, diam id pulvinar hendrerit, ligula elit aliquet nibh, eget volutpat lorem nisi sagittis urna.</p>
+	</main>
+	<footer>
+		<p>Copyright &copy; 2016</p>
+	</footer>
+</body>
+</html>
