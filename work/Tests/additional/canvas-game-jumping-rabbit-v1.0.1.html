@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<title>First Canvas Game!</title>
+<title>Jumping Rabbit Game!</title>
 <style>
 	canvas, button {
 		border: 1px solid #d3d3d3;
@@ -36,7 +36,8 @@ function startGame() {
 		}
 	};
 	obstacles  = [
-		new Component(250, 100, 100, 10, 'tomato'),
+		new Component(150, 280, 30, 80, 'tomato'),
+		new Component(300, 280, 30, 80, 'tomato'),
 	];
 }
 
@@ -82,6 +83,7 @@ function Component(x, y, width, height, color) {
 	this.bounce = 0;
 	this.jumped = false;
 	this.isFalling = true;
+	this.hasCollision = false;
 	this.update = function() {
 		ctx = myGameArea.context;
 		ctx.fillStyle = color;
@@ -101,26 +103,33 @@ function Component(x, y, width, height, color) {
 	this.checkCollisions = function() {
 		var rockBottom = myGameArea.canvas.height - this.height;
 		if (this.y > rockBottom) {
+			//this.y = rockBottom;
+			//this.gravitySpeed = -(this.gravitySpeed * this.bounce);
+			//this.jumped = false;
 			die();
 		}
 		if (this.x < 0) {
-			this.x = myGameArea.canvas.width - 1;
+			//this.x = myGameArea.canvas.width - 1;
+			die();
 		}
 		if (this.x > myGameArea.canvas.width) {
-			this.x = 0;
+			//this.x = 0;
+			die();
 		}
 	};
 	this.checkCollisionWithObstacles = function() {
+		this.hasCollision = false;
 		for(var i = 0; i < obstacles.length; i++) {
 			var obst = obstacles[i];
 			if (this.x + this.width > obst.x && this.x < obst.x + obst.width) {
 				if (this.y > obst.y) {
 					return;
 				}
-				if (this.y > obst.y - obst.height && (this.speedY + this.gravitySpeed > 0)) {
-					this.y = obst.y - obst.height;
+				if (this.y > obst.y - this.height && (this.speedY + this.gravitySpeed > 0)) {
+					this.y = obst.y - this.height;
 					this.gravitySpeed = -(this.gravitySpeed * this.bounce);
 					this.jumped = false;
+					this.hasCollision = true;
 				}
 			}
 		}
@@ -183,15 +192,13 @@ function updateGameArea() {
 		myGameArea.obstaclesSpeed *= 1.2;
 	}
 	
-	if (myGameArea.frameNo == 1 || obstacles[obstacles.length - 1].y > 100) {
+	if (myGameArea.frameNo == 1 || everyInterval(150)) {
 		myScore.value++;
-		var y = 0;
-		var height = 10;
-		var minWidth = 100;
-		var maxWidth = 150;
-		var width = Math.floor(Math.random() * (maxWidth - minWidth + 1) + minWidth);
-		var maxX = myGameArea.canvas.width - width;
-		var x = Math.floor(Math.random() * maxX + 1);
+		var height = 80;
+		var width = Math.floor(Math.random() * 50 + 10);
+		var y = myGameArea.canvas.height - height;
+		var x = myGameArea.canvas.width;
+		obstacles.push(new Component(x, y, width, height, 'tomato'));
 		obstacles.push(new Component(x, y, width, height, 'tomato'));
 	}
 	
@@ -214,11 +221,14 @@ function updateGameArea() {
 	}
 	myGamePiece.newPos();
 	myGamePiece.update();
+	if (myGamePiece.hasCollision) {
+		myGamePiece.x -= myGameArea.obstaclesSpeed;
+	}
 	for (var i = 0; i < obstacles.length; i++) {
 		if (obstacles[i].y > myGameArea.canvas.height) {
 			obstacles.shift();
 		}
-		obstacles[i].y += myGameArea.obstaclesSpeed;
+		obstacles[i].x -= myGameArea.obstaclesSpeed;
 		obstacles[i].update();
 	}
 	

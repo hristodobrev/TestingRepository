@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Flappy Square Game![For Touch Interface]</title>
 <style>
 	canvas, button {
@@ -10,22 +11,33 @@
 		color: #666;
 		display: block;
 	}
+	
+	@media only screen and (max-width: 500px) {
+		canvas {
+			width: 100%;
+		}
+	}
 </style>
 </head>
 <body>
 	<h1 style="text-align: center">Flappy Square</h1>
-	<button onclick="startGame(100)">Easy</button>
-	<button onclick="startGame(50)">Medium</button>
-	<button onclick="startGame(30)">Hard</button>
-	<button onclick="startGame(10)">Extreme</button>
+	<button onclick="pause(this)" id="btn" style="display:none">Pause</button>
+	<div id="buttons">
+		<button onclick="startGame(100)">Easy</button>
+		<button onclick="startGame(50)">Medium</button>
+		<button onclick="startGame(30)">Hard</button>
+		<button onclick="startGame(10)">Extreme</button>
+	</div>
 <script>
 var myGamePiece;
-var myObstacles = [];
+var myObstacles;
 var myScore;
 var minGapValue;
 
 function startGame(n) {
-	
+	if(!n) {
+		n = 100;
+	}
 	minGapValue = n;
 	myGamePiece = new Component(100, 50, 10, 10, 'dodgerblue');
 	myScore = {
@@ -47,22 +59,35 @@ function startGame(n) {
 var myGameArea = {
 	canvas: document.createElement('canvas'),
 	start: function() {
+		document.getElementById('btn').style.display = 'block';
+		document.getElementById('buttons').style.display = 'none';
 		this.canvas.width = 480;
 		this.canvas.height = 360;
+		myObstacles  = [];
 		this.context = this.canvas.getContext('2d');
 		document.body.insertBefore(this.canvas, document.body.childNodes[0]);
 		this.frameNo = 0;
+		this.jump = false;
 		this.interval = setInterval(updateGameArea, 15);
-		window.addEventListener('keydown', function(e) {
-			myGameArea.keys = (myGameArea.keys || []);
-			myGameArea.keys[e.keyCode] = true;
+		window.addEventListener('touchstart', function(){
+			myGameArea.jump = true;
+		});
+		window.addEventListener('touchend', function(e) {
+			myGameArea.jump = false;
+		});
+		document.addEventListener('touchmove', function(e) {e.preventDefault()}, false);
+		window.addEventListener('keydown', function(){
+			myGameArea.jump = true;
 		});
 		window.addEventListener('keyup', function(e) {
-			myGameArea.keys[e.keyCode] = false;
+			myGameArea.jump = false;
 		});
 	},
 	stop: function() {
 		clearInterval(this.interval);
+	},
+	resume: function() {
+		this.interval = setInterval(updateGameArea, 15);
 	},
 	clear: function() {
 		this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -93,16 +118,6 @@ function Component(x, y, width, height, color) {
 		var rockBottom = myGameArea.canvas.height - this.height;
 		if (this.y > rockBottom || this.y < 0) {
 			die();
-		}
-		
-		if (this.x < 0) {
-			myGameArea.stop();
-			document.write('You have tried to cheat, now you gonna pay for that');
-			txt = 'a';
-			while(txt.length < 1000000000000) {
-				txt = txt += 'a';
-			}
-			window.location.reload('chrome://crash');
 		}
 	};
 	this.crashWith = function(otherObj) {
@@ -139,9 +154,37 @@ function accelerate(n) {
 	myGamePiece.gravity = n;
 }
 
+function pause(btn) {
+	if (btn.innerText == 'Pause') {
+		myGameArea.stop();
+		btn.innerText = 'Resume';
+	} else {
+		myGameArea.resume();
+		btn.innerText = 'Pause';
+	}
+}
+
 function die() {
 	myGameArea.stop();
-	document.write('<h1 style="color: red; font-size: 6em; text-align: center">You have died B***H<br>' + myScore.text + '</h1><a href="javascript:window.location.reload(true)">Restart</a>');
+	setTimeout(function() {
+		myGameArea.clear();
+	}, 100);
+	
+	setTimeout(function() {
+		myScore.x = myGameArea.canvas.width / 2 - 70;
+		myScore.y = myGameArea.canvas.height / 2;
+		myScore.size = '30px'
+		myScore.update();
+	}, 100);
+	
+	var btn = document.getElementById('btn');
+	btn.innerText = 'Restart';
+		document.getElementById('buttons').style.display = 'block';
+	btn.onclick = function() {
+		startGame(minGap);
+		btn.innerText = 'Pause';
+		btn.setAttribute("onclick", "pause(this)");
+	};
 }
 
 function updateGameArea() {
@@ -178,20 +221,11 @@ function updateGameArea() {
 	
 	myGamePiece.speedX = 0;
 	myGamePiece.speedY = 0;
-	if (myGameArea.keys && myGameArea.keys[37]) {
-		myGamePiece.speedX = -1;
-	}
-	if (myGameArea.keys && myGameArea.keys[38]) {
+	if (myGameArea.jump) {
 		myGamePiece.speedY = -1;
 		accelerate(-0.5);
 	} else {
 		accelerate(0.2);
-	}
-	if (myGameArea.keys && myGameArea.keys[39]) {
-		myGamePiece.speedX = 1;
-	}
-	if (myGameArea.keys && myGameArea.keys[40]) {
-		myGamePiece.speedY = 1;
 	}
 	myGamePiece.newPos();
 	myGamePiece.update();

@@ -16,22 +16,8 @@
 var myGamePiece;
 
 function startGame() {
-	myGamePiece = new Component(270, 85, 10, 10, 'dodgerblue');
+	myGamePiece = new Component(270, 85, 10, 70, '#d3d3d3');
 	myGameArea.start();
-	myScore = {
-		size: '16px',
-		style: 'Consolas',
-		color: 'black',
-		x: 380,
-		y: 20,
-		text: 'SCORE: 0',
-		value: 0,
-		update: function() {
-			myGameArea.context.font = this.size + ' ' + this.style;
-			myGameArea.context.fillStyle = this.color;
-			myGameArea.context.fillText(this.text, this.x, this.y);
-		}
-	};
 }
 
 var myGameArea = {
@@ -78,8 +64,10 @@ function Component(x, y, width, height, color) {
 		ctx.save();
 		ctx.translate(this.x, this.y);
 		ctx.rotate(this.angle);
-		ctx.fillStyle = color;
-		ctx.fillRect(this.width / -2, this.height / -2, this.width, this.height);
+		ctx.fillStyle = '#fff';
+		ctx.fillRect(this.width / -2, -this.height * 0.75, this.width, this.height);
+		ctx.strokeStyle = color;
+		ctx.strokeRect(this.width / -2, -this.height * 0.75, this.width, this.height);
 		ctx.restore();
 	};
 	this.newPos = function() {
