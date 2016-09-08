@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Platform game</title>
+<style>
+	canvas, button {
+		border: 1px solid #d3d3d3;
+		background: #f1f1f1;
+		margin: 10px auto;
+		display: block;
+	}
+	
+	p {
+		text-align: center;
+		font-family: Consolas;
+	}
+</style>
+</head>
+<body>
+<script>
+var canvas = document.createElement('canvas');
+canvas.width = 640;
+canvas.height = 480;
+document.body.insertBefore(canvas, document.body.childNodes[0]);
+
+var context = canvas.getContext('2d');
+
+var gameChangedEvent = new Event('gamechanged');
+
+canvas.addEventListener('gamechanged', function() {
+	render();
+});
+
+canvas.addEventListener('click', function(e) {
+	var x = e.offsetX;
+	var y = e.offsetY;
+	
+	for (var i in player.objectsInRange) {
+		var obj = player.objectsInRange[i];
+		
+		if (x > obj.x && x < obj.x + obj.width && y > obj.y && y < obj.y + obj.height) {
+			var objType = obj.constructor.name;
+			if (objType === 'ManaPotion' || objType === 'HealthPotion') {
+				player.collect(obj);
+				return;
+			}
+			
+			if (objType === 'Hero') {
+				if (obj.isAlive) {
+					player.attack(obj);
+				}
+			}
+			
+		}
+	}
+});
+
+function render() {
+	context.clearRect(0, 0, canvas.width, canvas.height);
+	
+	var offsetY = 30;
+	
+	for (var i in gameObjects) {
+		var obj = gameObjects[i];
+		var ctorName = obj.constructor.name;
+		
+		if ((ctorName !== 'Hero' && ctorName !== 'HealthPotion' && ctorName !== 'ManaPotion' && ctorName !== 'Player') || obj.collected) {
+			continue;
+		}
+		
+		if ((ctorName === 'Hero' || ctorName === 'Player') && !obj.isAlive) {
+			continue;
+		}
+		
+		var img = images[obj.constructor.name]();
+		
+		//console.log(img);
+		context.drawImage(img, obj.x, obj.y, obj.width, obj.height);
+		
+		if (ctorName === 'Hero' || ctorName === 'Player') {
+			context.font = '15px Consolas';	
+			context.fillText(obj.name + ' - Health: ' + obj.health + ' | Mana: ' + obj.mana, 20, offsetY);
+			offsetY += 30;
+		}
+	}
+}
+
+function Hero(name, x, y, width, height) {
+	this.name = name;
+	this.x = x;
+	this.y = y;
+	this.width = width;
+	this.height = height;
+	this.health = 100;
+	this.mana = 100;
+	this.attackDamage = 10;
+	this.attackCost = 8;
+	this.defense = 3;
+	this.missChance = 0.2;
+	this.critChance = 0.1;
+	this.isAlive = true;
+	this.inventory = [];
+}
+
+Hero.prototype.attack = function(target) {
+	if (!target.isAlive) {
+		throw new Error('Enemy is already dead.');
+	}
+	
+	if (!this.isAlive) {
+		throw new Error('You must not be dead to attack.');
+	}
+	
+	if (this.mana < this.attackCost) {
+		throw new Error("You don't have enough mana to attack.");
+	}
+
+	var chance = Math.random();
+	var crited = false;
+	var damage = this.attackDamage + Math.floor(Math.random() * this.attackDamage * 0.5);
+	if (chance < this.critChance) {
+		crited = true;
+		damage *= 2;
+	}
+		
+	console.log('Player ' + this.name + (crited ? ' CRITICAL' : '') + ' attacks ' + target.name + '.');
+	
+	this.mana -= this.attackCost;
+	canvas.dispatchEvent(gameChangedEvent);
+	
+	var killedEnemy = target.responseAttack(damage);
+	
+	if (killedEnemy) {
+		var expGained = Math.floor(Math.random() * 25) + 75;
+		this.exp += expGained;
+		console.log(this.name + ' killed ' + target.name + ' and earned ' + expGained + ' exp.');
+	}
+};
+
+Hero.prototype.responseAttack = function(damage) {
+	var chance = Math.random();
+	if (this.missChance < chance) {
+		var damageTaken = damage - this.defense;
+		
+		this.health -= damageTaken;
+		
+		console.log(this.name + "'s health has been reduced with " + damageTaken + ' damage.');
+		
+		if (this.health <= 0) {
+			this.health = 0;
+			this.isAlive = false;
+			this.dropItems();
+			console.log(this.name + ' is dead!');
+		}
+		
+		canvas.dispatchEvent(gameChangedEvent);
+	} else {
+		console.log(this.name + ' missed an attack!');
+	}
+	
+	return this.isAlive == false;
+};
+
+Hero.prototype.dropItems = function() {
+	for (var i in this.inventory) {
+		var item = this.inventory[i];
+		
+		var randomX = this.x + Math.floor(Math.random() * 100) - 50;
+		var randomY = this.y + Math.floor(Math.random() * 100) - 50;
+		item.x = randomX;
+		item.y = randomY;
+		item.owner = null;
+		item.collected = false;
+	}
+};
+
+Hero.prototype.manaRegen = function() {
+	if (this.mana < 100) {
+		this.mana++;
+	}
+};
+
+Hero.prototype.collect = function(item) {
+	if (!this.isAlive) {
+		throw new Error('Dead hero cannot collect items.');
+	}
+	
+	if (this.inventory.indexOf(item) != -1) {
+		throw new Error('This item is already in your inventory.');
+	}
+	
+	if (item.collected) {
+		throw new Error('This item is already collected from another hero.');
+	}
+
+	item.owner = this;
+	item.collected = true;
+	this.inventory.push(item);
+	item.x = -50;
+	item.y = -50;
+};
+
+function Player(name, x, y, width, height) {
+	Hero.call(this, name, x, y, width, height);
+	this.speed = 1;
+	this.speedX = 0;
+	this.speedY = 0;
+	this.exp = 0;
+	this.objectsInRange = [];
+}
+
+Player.prototype = Object.create(Hero.prototype);
+
+Player.prototype.constructor = Player;
+
+Player.prototype.update = function() {
+	this.speedX = 0;
+	this.speedY = 0;
+
+	if (keysDown[37]) {
+		this.speedX = -this.speed;
+	}
+	if (keysDown[38]) {
+		this.speedY = -this.speed;
+	}
+	if (keysDown[39]) {
+		this.speedX = this.speed;
+	}
+	if (keysDown[40]) {
+		this.speedY = this.speed;
+	}
+};
+
+Player.prototype.objectInRange = function(obj) {
+	return this.objectsInRange.indexOf(obj) != -1;
+};
+
+Player.prototype.addObjectInRange = function(obj) {
+	/*
+	//console.log(obj.constructor.name);
+	if (obj.constructor.name == 'HealthPotion' || obj.constructor.name == 'ManaPotion') {
+		//console.log('I was here');
+		this.collect(obj);
+	}
+	*/
+	
+	this.objectsInRange.push(obj);
+};
+
+Player.prototype.removeObjectFromRange = function(obj) {
+	delete this.objectsInRange[this.objectsInRange.indexOf(obj)];
+	this.objectsInRange = this.objectsInRange.filter(function(o) {
+		return o != undefined;
+	});
+};
+
+function Item(name, x, y, width, height) {
+	this.name = name;
+	this.x = x;
+	this.y = y;
+	this.width = width;
+	this.height = height;
+	this.owner = null;
+	this.empty = false;
+	this.collected = false;
+}
+
+function HealthPotion(name, value, x, y, width, height) {
+	Item.call(this, name, x, y, width, height);
+	
+	this.value = value;
+}
+
+HealthPotion.prototype = Object.create(Item.prototype);
+
+HealthPotion.prototype.constructor = HealthPotion;
+
+HealthPotion.prototype.drink = function() {
+	if (this.owner == null) {
+		throw new Error('Not collected potions cannot be used.');
+	}
+	
+	if (this.empty) {
+		throw new Error('This potion is already empty.');
+	}
+	
+	this.owner.health += this.value;
+	canvas.dispatchEvent(gameChangedEvent);
+	
+	this.empty = true;
+};
+
+function ManaPotion(name, value, x, y, width, height) {
+	Item.call(this, name, x, y, width, height);
+	
+	this.value = value;
+}
+
+ManaPotion.prototype = Object.create(Item.prototype);
+
+ManaPotion.prototype.constructor = ManaPotion;
+
+ManaPotion.prototype.drink = function() {
+	if (this.owner == null) {
+		throw new Error('Not collected potions cannot be used.');
+	}
+	
+	if (this.empty) {
+		throw new Error('This potion is already empty.');
+	}
+	
+	this.owner.mana += this.value;
+	canvas.dispatchEvent(gameChangedEvent);
+	
+	this.empty = true;
+};
+
+
+var images = {
+	init: function() {
+		this.heroImg = new Image();
+		this.heroImg.src = 'images/hero.png';
+		this.healthPotion = new Image();
+		this.healthPotion.src = 'images/health_potion.png';
+		this.manaPotion = new Image();
+		this.manaPotion.src = 'images/mana_potion.png';
+		render();
+	},
+	'Hero': function() { return this.heroImg },
+	'Player': function() { return this.heroImg },
+	'HealthPotion': function() { return this.healthPotion },
+	'ManaPotion': function() { return this.manaPotion }
+};
+
+images.init();
+var keysDown = [];
+var gameObjects = [];
+
+var player = new Player('Pesho', 50, 60, 32, 32);
+player.attackDamage = 50;
+var enemy = new Hero('Gosho', 300, 280, 32, 32);
+var item1 = new Item("Pesho's weapon", 120, 60, 24, 24);
+var item2 = new Item("Gosho's shield", 360, 230, 32, 32);
+var potion = new HealthPotion('Rakiqta na Gosho', 40, 100, 100, 24, 24);
+var potion1 = new HealthPotion('Wiskeyto na Gosho', 200, 150, 100, 24, 24);
+var potion2 = new ManaPotion('Djina na Gosho', 350, 170, 100, 24, 24);
+var potion3 = new ManaPotion('Mentata na Gosho', 300, 260, 100, 24, 24);
+gameObjects.push(player, enemy, item1, item2, potion, potion1, potion2, potion3);
+
+enemy.collect(potion);
+enemy.collect(potion1);
+enemy.collect(potion2);
+enemy.collect(potion3);
+
+document.addEventListener('keydown', function(e) {
+	keysDown[e.keyCode] = true;
+});
+
+document.addEventListener('keyup', function(e) {
+	keysDown[e.keyCode] = false;
+});
+
+var gameInterval = setInterval(gameLoop, 10);
+var enemyAttacksInterval = setInterval(enemiesAttack, 1000);
+
+function gameLoop() {
+	player.update();
+	
+	if (player.speedX != 0 || player.speedY != 0) {
+		for (var i in gameObjects) {
+			var obj = gameObjects[i];
+			if (obj === player || obj.constructor.name == 'Item') {
+				continue;
+			}
+			
+			var inRange = true;
+			if (
+				player.x + player.width < obj.x ||
+				player.x > obj.x + obj.width ||
+				player.y + player.height < obj.y ||
+				player.y > obj.y + obj.height
+			) {
+				inRange = false;
+			}
+			
+			if (inRange) {
+				if (player.objectsInRange.indexOf(obj) == -1) {
+					//console.log('INRANGE');
+					if (!obj.collected) {
+						//console.log('INRANGE');
+						player.addObjectInRange(obj);
+					}
+				}
+			} else if (player.objectsInRange.indexOf(obj) != -1) {
+				//console.log('OUT OF RANGE');
+				player.removeObjectFromRange(obj);
+			}
+		}
+	}
+	
+	player.x += player.speedX;
+	player.y += player.speedY;
+	
+	render();
+}
+
+function enemiesAttack() {
+	var enemies = player.objectsInRange.filter(function(e) {
+		return e.constructor.name === 'Hero' && e.isAlive;
+	});
+	
+	for (var i in enemies) {
+		var enemy = enemies[i];
+		enemy.attack(player);
+	}
+	
+	var heroes = gameObjects.filter(function(h){
+		return h.constructor.name === 'Player' || h.constructor.name === 'Hero';
+	});
+	
+	for (var i in heroes) {
+		heroes[i].manaRegen();
+	}
+}
+
+//render();
+</script>
+</body>
+</html>
