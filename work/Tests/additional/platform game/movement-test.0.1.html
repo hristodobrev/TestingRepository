@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Platform game</title>
+<style>
+	canvas, button {
+		border: 1px solid #d3d3d3;
+		background: #f1f1f1;
+		margin: 10px auto;
+		display: block;
+	}
+	
+	p {
+		text-align: center;
+		font-family: Consolas;
+	}
+</style>
+</head>
+<body>
+<script>
+var canvas = document.createElement('canvas');
+canvas.width = 640;
+canvas.height = 480;
+document.body.insertBefore(canvas, document.body.childNodes[0]);
+
+var context = canvas.getContext('2d');
+
+
+var keys = [];
+document.addEventListener('keydown', function(e) {
+	keys[e.keyCode] = true;
+});
+
+document.addEventListener('keyup', function(e) {
+	keys[e.keyCode] = false;
+});
+
+
+function Obstacle(x, y, width, height, color) {
+	this.x = x;
+	this.y = y;
+	this.width = width;
+	this.height = height;
+	this.color = color;
+}
+
+function Player(x, y, width, height, color) {
+	this.x = x;
+	this.y = y;
+	this.speed = 4;
+	this.speedX = 0;
+	this.speedY = 0;
+	this.gravitySpeed = 0;
+	this.defaultGravity = 0.5;
+	this.gravity = 0.5;
+	this.bounce = 0;
+	this.width = width;
+	this.height = height;
+	this.color = color;
+}
+
+var player = new Player(300, 340, 20, 20, 'tomato');
+var obstacles = [];
+var obstacle1 = new Obstacle(340, 400, 20, 20, 'dodgerblue');
+var obstacle2 = new Obstacle(340, 440, 20, 20, 'dodgerblue');
+var obstacle3 = new Obstacle(320, 400, 20, 20, 'dodgerblue');
+obstacles.push(obstacle1, obstacle2, obstacle3);
+
+
+
+function gameLoop(multiplier) {
+
+	performKeysOperation();
+	
+	//checkForCollisions();
+
+	//update();
+	//render();
+	
+	//function checkForCollisions() {
+	
+		if (player.y + player.height > canvas.height) {
+			player.gravitySpeed = -(player.gravitySpeed * player.bounce);
+			player.jumped = false;
+			player.y = canvas.height - player.height;
+		}
+	
+		for (var i in obstacles) {
+			var obstacle = obstacles[i];
+			
+			if (player.y + player.height - 1 > obstacle.y && player.y < obstacle.y + obstacle.height) {
+				if (player.speedX > 0 && player.x + player.width >= obstacle.x && player.x < obstacle.x) {
+					player.speedX = 0;
+					if (player.x + player.width > obstacle.x) {
+						player.x = obstacle.x - player.width;
+					}
+				}
+				
+				if (player.speedX < 0 && player.x <= obstacle.x + obstacle.width && player.x > obstacle.x) {
+					player.speedX = 0;
+					if (player.x < obstacle.x + obstacle.width) {
+						player.x = obstacle.x + obstacle.width;
+					}
+				}
+			}
+			
+			if (player.x + player.width > obstacle.x && player.x < obstacle.x + obstacle.width) {
+				if ((player.speedY > 0 || player.gravitySpeed != 0) && player.y + player.height >= obstacle.y && player.y < obstacle.y) {
+					player.speedY = 0;
+					player.gravitySpeed = 0;
+					player.gravity = 0;
+					player.jumped = false;
+					player.y = obstacle.y - player.height;
+				}
+				
+				if ((player.speedY < 0 || player.gravitySpeed != 0) && player.y <= obstacle.y + obstacle.height && player.y > obstacle.y) {
+					player.speedY = 0;
+					player.gravitySpeed = 0;
+					player.gravity = 0;
+					player.y = obstacle.y + obstacle.height;
+				}
+			}
+		}
+		
+		
+	//}
+	
+	//function update() {
+		
+		player.x += player.speedX;
+		
+		player.gravitySpeed += player.gravity;
+		player.y += player.speedY + player.gravitySpeed;
+		
+		player.speedX = 0;
+		player.speedY = 0;
+	//}
+	
+	//function render() {
+		context.clearRect(0, 0, canvas.width, canvas.height);
+		
+		for (var i in obstacles) {
+			var obstacle = obstacles[i];
+			context.fillStyle = obstacle.color;
+			context.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+		}
+		
+		context.fillStyle = player.color;
+		context.fillRect(player.x, player.y, player.width, player.height);
+	//}
+	
+	function performKeysOperation() {
+		if (keys[37]) {
+			player.speedX = -player.speed;
+		}
+		if (keys[39]) {
+			player.speedX = player.speed;
+		}
+		if (keys[38] && !player.jumped) {
+			player.gravity = -(player.defaultGravity * 20);
+			player.jumped = true;
+		} else {
+			player.gravity = player.defaultGravity;
+		}
+	}
+}
+
+function main() {
+	var now = Date.now();
+	var delta = now - then;
+	
+	gameLoop(delta);
+	
+	then = now;
+	requestAnimationFrame(main);
+}
+
+var then = Date.now();
+main();
+</script>
+</body>
+</html>

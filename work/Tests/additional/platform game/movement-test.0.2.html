@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Platform game</title>
+<style>
+	canvas, button {
+		border: 1px solid #d3d3d3;
+		background: #f1f1f1;
+		margin: 10px auto;
+		display: block;
+	}
+	
+	p {
+		text-align: center;
+		font-family: Consolas;
+	}
+</style>
+</head>
+<body>
+<script>
+var canvas = document.createElement('canvas');
+canvas.width = 640;
+canvas.height = 480;
+document.body.insertBefore(canvas, document.body.childNodes[0]);
+
+var context = canvas.getContext('2d');
+var playerImg = new Image();
+playerImg.src = 'images/hero.png';
+
+var frame = 0;
+var objWidth = 32;
+var objHeight = 32;
+
+
+var keys = [];
+document.addEventListener('keydown', function(e) {
+	keys[e.keyCode] = true;
+});
+
+document.addEventListener('keyup', function(e) {
+	keys[e.keyCode] = false;
+});
+
+canvas.addEventListener('click', function(e) {
+	var x = e.offsetX;
+	var y = e.offsetY;
+	
+	for (var i in obstacles) {
+		var obst = obstacles[i];
+		if (x < obst.x + obst.width && x > obst.x && y > obst.y && y < obst.y + obst.height) {
+			obst.clicksCount++;
+			var opacity = 1 - (obst.clicksCount / obst.maxClicks);
+			obst.color = 'rgba(30, 144, 255, ' + opacity + ')';
+			
+			if (obst.clicksCount >= obst.maxClicks) {
+				delete obstacles[i];
+				obstacles = obstacles.filter(function(o) {
+					return o != undefined;
+				});
+			}
+			
+			return;
+		}
+	}
+	
+	x = x - x % objWidth;
+	y = y - y % objHeight;
+	
+	var obst = new Obstacle(x, y, 32, 32, 'images/bush.png');
+	obstacles.push(obst);
+});
+
+
+function Obstacle(x, y, width, height, color) {
+	this.x = x;
+	this.y = y;
+	this.width = width;
+	this.height = height;
+	if (color.indexOf('images') != -1) {
+		this.img = new Image();
+		this.img.src = color;
+	} else {
+		this.color = color;
+	}
+	this.clicksCount = 0;
+	if (arguments.length > 5) {
+		this.maxClicks = arguments[5];
+	} else {
+		this.maxClicks = 2;
+	}
+}
+
+function Player(x, y, width, height, color) {
+	this.x = x;
+	this.y = y;
+	this.speed = 4;
+	this.speedX = 0;
+	this.speedY = 0;
+	this.width = width;
+	this.height = height;
+	if (color.indexOf('images') != -1) {
+		this.img = new Image();
+		this.img.src = color;
+	} else {
+		this.color = color;
+	}
+}
+
+var player = new Player(300, 340, objWidth, objHeight, 'images/hero.png');
+var obstacles = [];
+var obstacle1 = new Obstacle(340, 400, objWidth, objHeight, 'rgb(30, 144, 255)');
+var obstacle2 = new Obstacle(340, 440, objWidth, objHeight, 'dodgerblue');
+var obstacle2 = new Obstacle(340, 440, 32, 32, 'images/bush.png');
+var obstacle3 = new Obstacle(320, 400, objWidth, objHeight, 'dodgerblue', 10);
+//obstacles.push(obstacle1, obstacle2, obstacle3);
+
+
+
+function gameLoop(multiplier) {
+
+	performKeysOperation();
+	
+	checkForCollisions();
+
+	update();
+	render();
+	
+	function checkForCollisions() {
+		if (player.speedY > 0 && player.y + player.height >= canvas.height) {
+			player.speedY = 0;
+			player.y = canvas.height - player.height;
+		}
+		
+		if (player.speedY < 0 && player.y <= 0) {
+			player.speedY = 0;
+			player.y = 0;
+		}
+		
+		if (player.speedX > 0 && player.x + player.width >= canvas.width) {
+			player.speedX = 0;
+			player.x = canvas.width - player.width;
+		}
+		
+		if (player.speedX < 0 && player.x <= 0) {
+			player.speedX = 0;
+			player.x = 0;
+		}
+	
+		for (var i in obstacles) {
+			var obstacle = obstacles[i];
+			
+			if (player.y + player.height - 1 > obstacle.y && player.y < obstacle.y + obstacle.height) {
+				if (player.speedX > 0 && player.x + player.width >= obstacle.x && player.x < obstacle.x) {
+					player.speedX = 0;
+				}
+				
+				if (player.speedX < 0 && player.x <= obstacle.x + obstacle.width && player.x > obstacle.x) {
+					player.speedX = 0;
+				}
+			}
+			
+			if (player.x + player.width > obstacle.x && player.x < obstacle.x + obstacle.width) {
+				if (player.speedY > 0 && player.y + player.height >= obstacle.y && player.y < obstacle.y) {
+					player.speedY = 0;
+					player.y = obstacle.y - player.height;
+					
+				}
+				
+				if (player.speedY < 0 && player.y <= obstacle.y + obstacle.height && player.y > obstacle.y) {
+					player.speedY = 0;
+					player.y = obstacle.y + obstacle.height;
+				}
+			}
+		}
+	}
+	
+	function update() {
+		
+		player.x += player.speedX;
+		player.y += player.speedY;
+		
+		
+		
+	}
+	
+	function render() {
+		frame %= 30;
+		context.clearRect(0, 0, canvas.width, canvas.height);
+		
+		for (var i in obstacles) {
+			var obstacle = obstacles[i];
+			if (!obstacle.img) {
+				context.fillStyle = obstacle.color;
+				context.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+			} else {
+				context.drawImage(obstacle.img, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+			}
+		}
+		
+		var cutX = 0;
+		var cutY = 0;
+		if (player.speedY > 0) {
+			cutY = 0;
+		}
+		if (player.speedY < 0) {
+			cutY = 96;
+		}
+		if (player.speedX > 0) {
+			cutY = 64;
+		}
+		if (player.speedX < 0) {
+			cutY = 32;
+		}
+		
+		//context.fillStyle = player.color;
+		//context.fillRect(player.x, player.y, player.width, player.height);
+		var cond = Math.floor(frame / 10);
+		switch(cond) {
+			case 0: 
+				context.drawImage(player.img, cutX, cutY, 32, 32, player.x, player.y, player.width, player.height);
+				break;
+			case 1:
+				context.drawImage(player.img, cutX + 32, cutY, 32, 32, player.x, player.y, player.width, player.height);
+				break;
+			case 2:
+				context.drawImage(player.img, cutX + 64, cutY, 32, 32, player.x, player.y, player.width, player.height);
+				break;
+		}
+		
+		if (player.speedY != 0 || player.speedX != 0) {
+			frame++;
+		}
+		
+		player.speedX = 0;
+		player.speedY = 0;
+	}
+	
+	function performKeysOperation() {
+		if (keys[37]) {
+			player.speedX -= player.speed;
+		}
+		if (keys[39]) {
+			player.speedX += player.speed;
+		}
+		if (keys[38]) {
+			player.speedY -= player.speed;
+		} 
+		if (keys[40]) {
+			player.speedY += player.speed;
+		}
+	}
+}
+
+function main() {
+	var now = Date.now();
+	var delta = now - then;
+	
+	gameLoop(delta);
+	
+	then = now;
+	requestAnimationFrame(main);
+}
+
+var then = Date.now();
+main();
+</script>
+</body>
+</html>

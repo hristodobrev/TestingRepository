@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Mining Game</title>
+<style>
+	canvas, button {
+		border: 1px solid #d3d3d3;
+		background: #f1f1f1;
+		margin: 10px auto;
+		display: block;
+	}
+</style>
+</head>
+<body onload="startGame()">
+<button onclick="game.save()">Save</button>
+<script>
+function startGame() {
+	game.start();
+}
+
+var obstacles = [];
+
+var game = {
+	canvas: document.createElement('canvas'),
+	start: function() {
+		this.canvas.width = 640;
+		this.canvas.height = 480;
+		this.mouseX = 0;
+		this.mouseY = 0;
+		this.context = this.canvas.getContext('2d');
+		document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+		
+		if (localStorage.obstacles) {
+			obstacles = JSON.parse(localStorage.obstacles);
+			obstacles = obstacles.filter(function (n) {
+				return n != undefined;
+			});
+			for (var i = 0; i < obstacles.length; i++) {
+				var obst = obstacles[i];
+				obst.render = function () {
+					var ctx = game.context;
+					ctx.fillStyle = this.color;
+					ctx.fillRect(this.x, this.y, this.width, this.height);
+				};
+			}
+		} else {
+			obstacles.push(
+				new Obstacle(200, 450, 10, 10, 'dodgerblue'),
+				new Obstacle(210, 450, 10, 10, 'dodgerblue'),
+				new Obstacle(230, 450, 10, 10, 'dodgerblue'),
+				new Obstacle(210, 460, 10, 10, 'dodgerblue'),
+				new Obstacle(210, 470, 10, 10, 'dodgerblue'),
+				new Obstacle(220, 470, 10, 10, 'dodgerblue'),
+				new Obstacle(230, 470, 10, 10, 'dodgerblue')
+			);
+		}
+		
+		this.interval = setInterval(game.update);
+		
+		window.addEventListener('keydown', function(e) {
+			game.keys = game.keys || [];
+			game.keys[e.keyCode] = true;
+		});
+		window.addEventListener('keyup', function(e) {
+			game.keys = game.keys || [];
+			game.keys[e.keyCode] = false;
+		});
+		this.canvas.addEventListener('click', function(e) {
+			var found = false;
+			var x = e.offsetX;
+			var y = e.offsetY;
+			var maxDistance = player.width * 5;
+			var distance = Math.sqrt(
+				(game.mouseX - (player.x + (player.width / 2))) * (game.mouseX - (player.x + (player.width / 2))) +
+				(game.mouseY - (player.y + (player.height / 2))) * (game.mouseY - (player.y + (player.height / 2)))
+			);
+			if (maxDistance < distance) {
+				return;
+			}
+			
+			for (var i = 0; i < obstacles.length; i++) {
+				var obst = obstacles[i];
+				if (!obst) {
+					continue;
+				}
+				if (x > obst.x && x < obst.x + obst.width &&
+					y > obst.y && y < obst.y + obst.height
+				) {
+					delete obstacles[i];
+					found = true;
+				}
+			}
+			
+			if (!found) {
+				var obstX = x - x % 20;
+				var obstY = y - y % 20;
+				var newObst = new Obstacle(obstX, obstY, 20, 20, 'dodgerblue');
+				obstacles.push(newObst);
+			}
+		});
+		this.canvas.addEventListener('mousemove', function(e) {
+			game.mouseX = e.offsetX;
+			game.mouseY = e.offsetY;
+		});
+	},
+	update: function () {
+		game.clear();
+		
+		player.speedX = 0;
+		player.speedY = 0;
+		if (game.keys && game.keys[37]) {
+			player.speedX = -player.speed;
+		}
+		if (game.keys && game.keys[38] && !player.hasJumped) {
+			player.accelerate(-4);
+			player.hasJumped = true;
+		} else {
+			player.accelerate(0.1);
+		}
+		if (game.keys && game.keys[39]) {
+			player.speedX = player.speed;
+		}
+		
+		player.update();
+		player.render();
+		
+		for (var i = 0; i < obstacles.length; i++) {
+			if (!obstacles[i]) {
+				continue;
+			}
+			
+			obstacles[i].render();
+		}
+		
+		var maxDistance = player.width * 5;
+		var distance = Math.sqrt(
+			(game.mouseX - (player.x + (player.width / 2))) * (game.mouseX - (player.x + (player.width / 2))) +
+			(game.mouseY - (player.y + (player.height / 2))) * (game.mouseY - (player.y + (player.height / 2)))
+		);
+		if (maxDistance >= distance) {
+			var x = game.mouseX - game.mouseX % 20;
+			var y = game.mouseY - game.mouseY % 20;
+			game.context.fillStyle = 'rgba(0, 0, 0, 0.5)';
+			game.context.fillRect(x, y, 20, 20);
+		}
+	},
+	clear: function () {
+		this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+	},
+	save: function () {
+		var data = JSON.stringify(obstacles);
+		localStorage.obstacles = data;
+	}
+};
+
+var player = {
+	x: 20,
+	y: 140,
+	width: 20,
+	height: 20,
+	color: 'tomato',
+	speed: 0.5,
+	speedX: 0,
+	speedY: 0,
+	gravity: 0.1,
+	gravitySpeed: 0.98,
+	bounce: 0,
+	collisionLeft: false,
+	collisionRight: false,
+	collisionTop: false,
+	hasJumped: false,
+	update: function () {
+		player.collisionLeft = false;
+		player.collisionRight = false;
+		player.collisionTop = false;
+		player.checkCollisions();
+		
+		this.gravitySpeed += this.gravity;
+		if (this.x + this.speedX > this.x && !this.collisionRight) {
+			this.x += this.speedX;
+		}
+		
+		if (this.x + this.speedX < this.x && !this.collisionLeft) {
+			this.x += this.speedX;
+		}
+		
+		this.y += this.speedY + this.gravitySpeed;
+		
+		var bottom = game.canvas.height - this.height;
+		if (this.y > bottom) {
+			this.y = bottom;
+			this.gravitySpeed = -(this.gravitySpeed * this.bounce);
+			this.hasJumped = false;
+		}
+		
+		for (var i = 0; i < obstacles.length; i++) {
+			var obst = obstacles[i];
+			if (!obst) {
+				continue;
+			}
+			
+			if (player.x + player.width > obst.x && player.x < obst.x + obst.width) {
+				
+				if (player.y + player.height > obst.y && player.y < obst.y) {
+					player.y = obst.y - player.height;
+					this.gravitySpeed = -(this.gravitySpeed * this.bounce);
+					player.hasJumped = false;
+					
+				}
+				
+				if (player.y < obst.y + obst.height && player.y > obst.y) {
+					player.y = obst.y + obst.height;
+					player.hasJumped = true;
+					player.gravity = 0.1;
+					player.gravitySpeed = 0;
+				}
+			}
+		}
+	},
+	accelerate: function (n) {
+		this.gravity = n;
+	},
+	render: function () {
+		var ctx = game.context;
+		ctx.fillStyle = this.color;
+		ctx.fillRect(this.x, this.y, this.width, this.height, this.color);
+	},
+	checkCollisions: function () {		
+		for (var i = 0; i < obstacles.length; i++) {
+			var obst = obstacles[i];
+			if (!obst) {
+				continue;
+			}
+			
+			if (player.y + player.height - 1 > obst.y && player.y < obst.y + obst.height) {
+				if (player.x < obst.x + obst.width && player.x + player.width >= obst.x) {
+					player.collisionRight = true;
+				}
+				
+				if (player.x > obst.x && player.x <= obst.x + obst.width) {
+					player.collisionLeft = true;
+				}
+			}
+		}
+	}
+};
+
+function Obstacle(x, y, width, height, color) {
+	this.x = x;
+	this.y = y;
+	this.width = width;
+	this.height = height;
+	this.color = color;
+	this.render = function () {
+		var ctx = game.context;
+		ctx.fillStyle = this.color;
+		ctx.fillRect(this.x, this.y, this.width, this.height);
+	};
+}
+
+function checkClickedItem(x, y) {
+	for (var i = 0; i < obstacles.length; i++) {
+		var obst = obstacles[i];
+		if (x > obst.x && x < obst.x + obst.width &&
+			y > obst.y && y < obst.y + obst.height
+		) {
+			delete obstacles[i];
+		}
+	}
+}
+</script>
+</body>
+</html>

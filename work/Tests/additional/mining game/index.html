@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Mining game</title>
+<style>
+	canvas, button {
+		border: 1px solid #d3d3d3;
+		background: #f1f1f1;
+		margin: 10px auto;
+		display: block;
+	}
+</style>
+</head>
+<body>
+	
+<script>
+var Game = (function() {
+	function Game(player, buildings, renderableItems, renderer) {
+		this.player = player;
+		this.buildings = buildings;
+		this.renderableItems = renderableItems;
+		this.renderer = renderer;
+		this.incomesInterval = setInterval(getIncomes, 3000);
+	}
+	
+	function getIncomes() {
+		for (var index in this.buildings) {
+			var building = this.buildings[index];
+			var incomes = building.getResourcesIncome();
+			
+			var types = [];
+			var amounts = [];
+			
+			for (var resIndex in incomes) {
+				types.push(resIndex);
+				amounts.push(incomes[resIndex]);
+			}
+			
+			this.player.increaseResources(types, amounts);
+		}
+	}
+	
+	Game.prototype.tryToCreateBuilding = function(building) {
+		if (building.build) {
+			throw new Error('This building has already been built.');
+		}
+	
+		var resourcesAvailable = this.player.getResources();
+		var enoughResources = true;
+		for (var index in resourcesAvailable) {
+			if (resourcesAvailable[index] < building.resourcesCost[index]) {
+				enoughResources = false;
+			}
+		}
+		
+		if (!enoughResources) {
+			throw new Error('Not enough resources to create this building.');
+		}
+		
+		var types = [];
+		var amounts = [];
+		for (var index in building.resourcesCost) {
+			types.push(index);
+			amounts.push(building.resourcesCost[index]);
+		}
+		
+		console.log(types, amounts);
+		this.player.decreaseResources(types, amounts);
+		
+		this.renderableItems.push(building);
+		this.buildings.push(building);
+		
+		building.build = true;
+		document.dispatchEvent(dataChangedEvent);
+	};
+	
+	return Game;
+})();
+
+
+var Player = (function() {
+	function Player() {
+		this.init();
+	}
+	
+	Player.prototype.init = function() {
+		this.resources = {
+			wood: 0,
+			ore: 0,
+			gold: 0,
+			crystal: 0,
+			gems: 0
+		};
+		
+		this.resourcesImages = {
+			wood: 'images/wood.png',
+			ore: 'images/ore.png',
+			gold: 'images/gold.png',
+			crystal: 'images/crystal.png',
+			gems: 'images/gems.png'
+		};
+		
+		this.renderData = {};
+		var offset = 10;
+		for (var index in this.resources) {
+			var src = this.resourcesImages[index];
+			var x = 10;
+			var y = offset;
+			var width = 28;
+			var height = 28;
+			var value = this.resources[index];
+			var item = new Renderable(src, x, y, width, height, value);
+			this.renderData[index] = item;
+			offset += 30;
+		}
+	};
+	
+	Player.prototype.getResources = function() {
+		return this.resources;
+	};
+	
+	Player.prototype.getResourcesImages = function() {
+		return this.resourcesImages;
+	};
+	
+	Player.prototype.increaseResources = function(types, amounts) {
+		if (!types || !amounts) {
+			throw new Error('Some argument is missing.');
+		}
+		
+		if (types.length != amounts.length) {
+			throw new Error('The count of resources must match the count of the values.');
+		}
+		
+		for (var i = 0; i < types.length; i++) {
+			this.resources[types[i]] += amounts[i];
+			this.renderData[types[i]].value = this.resources[types[i]];
+		}
+		
+		document.dispatchEvent(dataChangedEvent);
+	};
+	
+	Player.prototype.decreaseResources = function(types, amounts) {
+		if (!types || !amounts) {
+			throw new Error('Some argument is missing.');
+		}
+		
+		if (types.length != amounts.length) {
+			throw new Error('The count of resources must match the count of the values.');
+		}
+	
+		for (var i = 0; i < types.length; i++) {
+			if (this.resources[types[i]] - amounts[i] < 0) {
+				throw new Error('Not enough resources to perform this operation.');
+			}
+		}
+		
+		for (var i = 0; i < types.length; i++) {
+			this.resources[types[i]] -= amounts[i];
+			this.renderData[types[i]].value = this.resources[types[i]];
+		}
+		
+		document.dispatchEvent(dataChangedEvent);
+	};
+	
+	Player.prototype.getRenderData = function() {		
+		return this.renderData;
+	};
+	
+	return Player;
+})();
+
+
+var Building = (function() {
+	function Building(imgSrc, x, y, width, height) {
+		this.img = new Image();
+		this.img.src = imgSrc;
+		this.x = x;
+		this.y = y;
+		this.width = width;
+		this.height = height;
+		this.build = false;
+		this.resourcesCost = {};
+		this.resourcesIncome = {};
+		this.renderData = [];
+		this.renderData.push(new Renderable(imgSrc, x, y, width, height));
+	}
+	
+	/*
+	Building.prototype.tryToBuild = function(player, renderableItems, incomesItems) {
+		if (this.build) {
+			throw new Error('This building has already been built.');
+		}
+	
+		var resourcesAvailable = player.getResources();
+		var enoughResources = true;
+		for (var index in resourcesAvailable) {
+			if (resourcesAvailable[index] < this.resourcesCost[index]) {
+				enoughResources = false;
+			}
+		}
+		
+		if (!enoughResources) {
+			throw new Error('Not enough resources to create this building.');
+		}
+		
+		var types = [];
+		var amounts = [];
+		for (var index in this.resourcesCost) {
+			types.push(index);
+			amounts.push(this.resourcesCost[index]);
+		}
+		
+		console.log(types, amounts);
+		player.decreaseResources(types, amounts);
+		
+		renderableItems.push(this);
+		incomesItems.push(this);
+		
+		this.build = true;
+		document.dispatchEvent(dataChangedEvent);
+	};
+	*/
+	
+	Building.prototype.setResourcesCost = function(wood, ore, gold, crystal, gems) {
+		this.resourcesCost.wood = wood;
+		this.resourcesCost.ore = ore;
+		this.resourcesCost.gold = gold;
+		this.resourcesCost.crystal = crystal;
+		this.resourcesCost.gems = gems;
+	};
+	
+	Building.prototype.setResourcesIncome = function(wood, ore, gold, crystal, gems) {
+		this.resourcesIncome.wood = wood;
+		this.resourcesIncome.ore = ore;
+		this.resourcesIncome.gold = gold;
+		this.resourcesIncome.crystal = crystal;
+		this.resourcesIncome.gems = gems;
+	};
+	
+	Building.prototype.getResourcesIncome = function() {
+		return this.resourcesIncome;
+	};
+	
+	Building.prototype.getRenderData = function() {
+		return this.renderData;
+	};
+	
+	return Building;
+})();
+
+
+var Renderer = (function() {
+	function Renderer(renderableItems) {
+		this.canvas = document.createElement('canvas');
+		this.canvas.width = 640;
+		this.canvas.height = 480;
+		
+		this.context = this.canvas.getContext('2d');
+		document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+		
+		this.renderableItems = renderableItems;
+	}
+	
+	Renderer.prototype.renderFrame = function() {
+		var ctx = this.context;
+		ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+		
+		for (var index in this.renderableItems) {
+		
+			var renderableObject = this.renderableItems[index];
+			var renderableData = renderableObject.getRenderData();
+				
+			for (var renderIndex in renderableData) {
+				var item = renderableData[renderIndex];
+				
+				ctx.drawImage(item.image, item.x, item.y, item.width, item.height);
+				
+				if (item.value !== undefined) {
+					ctx.font = '16px Consolas';
+					ctx.fillText(item.value, item.x + item.width + 5, (item.y + item.height - 5));
+				}
+			}
+		}
+		
+	};
+	
+	Renderer.prototype.renderBuildingType = function(buildings, index) {
+		this.context.font = '16px Consolas';
+		this.context.fillText('Build: ' + buildings[index], 50, 50);
+	};
+	
+	return Renderer;
+})();
+
+
+function Renderable(imgSrc, x, y, width, height, value) {
+	this.image = new Image();
+	this.image.src = imgSrc;
+	this.imageReady = false;
+	var that = this;
+	this.image.onload = function () {
+		that.imageReady = true;
+	};
+	this.x = x;
+	this.y = y;
+	this.width = width;
+	this.height = height;
+	this.value = value;
+}
+
+var dataChangedEvent = new CustomEvent('datachanged', {'detail': 'Some data has been changed.'});
+var renderableItems = [];
+var buildings = [];
+var buidlingTypes = ['Sawmill', 'Ore Mine', 'Gold Mine', 'Gem Mine', 'Crystal Mine'];
+var buildingTypeIndex = 0;
+var player = new Player();
+renderableItems.push(player);
+var renderer = new Renderer(renderableItems);
+var game = new Game(player, buildings, renderableItems, renderer);
+
+document.addEventListener('datachanged', function() {
+	renderer.renderFrame();
+});
+
+document.addEventListener('mousewheel', function(e) {
+	
+	if (e.deltaY > 0) {
+		buildingTypeIndex--;
+	} else {
+		buildingTypeIndex++;
+	}
+	
+	buildingTypeIndex = Math.abs(buildingTypeIndex);
+	buildingTypeIndex %= buidlingTypes.length;
+	
+	renderer.renderBuildingType(buidlingTypes, buildingTypeIndex);
+});
+
+</script>
+</body>
+</html>

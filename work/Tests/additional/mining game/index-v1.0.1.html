@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Mining game</title>
+<style>
+	canvas, button {
+		border: 1px solid #d3d3d3;
+		background: #f1f1f1;
+		margin: 10px auto;
+		display: block;
+	}
+	
+	p {
+		text-align: center;
+		font-family: Consolas;
+	}
+</style>
+</head>
+<body>
+<button onclick="changeBuildMode()">Build</button>
+<p id="log"></p>
+<script>
+var Game = (function() {
+	function Game(player, buildings, renderableItems, renderer) {
+		this.player = player;
+		
+		this.buildings = buildings;
+		
+		this.renderableItems = renderableItems;
+		this.renderer = renderer;
+		this.incomesInterval = setInterval(getIncomes, 3000);
+	}
+	
+	function getIncomes() {
+		for (var index in this.buildings) {
+			var building = this.buildings[index];
+			var incomes = building.getResourcesIncome();
+			
+			var types = [];
+			var amounts = [];
+			
+			for (var resIndex in incomes) {
+				types.push(resIndex);
+				amounts.push(incomes[resIndex]);
+			}
+			
+			this.player.increaseResources(types, amounts);
+			//console.log('Incomes got');
+		}
+	}
+	
+	Game.prototype.tryToCreateBuilding = function(building) {
+		if (building.build) {
+			throw new Error('This building has already been built.');
+		}
+	
+		var resourcesAvailable = this.player.getResources();
+		var enoughResources = true;
+		for (var index in resourcesAvailable) {
+			if (resourcesAvailable[index] < building.resourcesCost[index]) {
+				enoughResources = false;
+			}
+		}
+		
+		if (!enoughResources) {
+			throw new Error('Not enough resources to create this building.');
+		}
+		
+		var types = [];
+		var amounts = [];
+		for (var index in building.resourcesCost) {
+			types.push(index);
+			amounts.push(building.resourcesCost[index]);
+		}
+		
+		//console.log(types, building.resourcesCost);
+		this.player.decreaseResources(types, amounts);
+		
+		this.renderableItems.push(building);
+		this.buildings.push(building);
+		
+		building.build = true;
+		document.dispatchEvent(dataChangedEvent);
+	};
+	
+	return Game;
+})();
+
+
+var Player = (function() {
+	function Player() {
+		this.init();
+	}
+	
+	Player.prototype.init = function() {
+		this.resources = {
+			wood: 100,
+			ore: 100,
+			gold: 1000,
+			crystal: 0,
+			gems: 0
+		};
+		
+		this.resourcesImages = {
+			wood: 'images/wood.png',
+			ore: 'images/ore.png',
+			gold: 'images/gold.png',
+			crystal: 'images/crystal.png',
+			gems: 'images/gems.png'
+		};
+		
+		this.renderData = [];
+		var offset = 10;
+		for (var index in this.resources) {
+			var src = this.resourcesImages[index];
+			var x = 10;
+			var y = offset;
+			var width = 28;
+			var height = 28;
+			var value = this.resources[index];
+			var resImg = new Renderable(src, x, y, width, height, 'image');
+			//var resText = new Renderable(this.resources[index], x + 30, y, width, height, 'text');
+			this.renderData.push(resImg);
+			//this.renderData.push(resText);
+			offset += 30;
+		}
+	};
+	
+	Player.prototype.getResources = function() {
+		return this.resources;
+	};
+	
+	Player.prototype.getResourcesImages = function() {
+		return this.resourcesImages;
+	};
+	
+	Player.prototype.increaseResources = function(types, amounts) {
+		if (!types || !amounts) {
+			throw new Error('Some argument is missing.');
+		}
+		
+		if (types.length != amounts.length) {
+			throw new Error('The count of resources must match the count of the values.');
+		}
+		
+		for (var i = 0; i < types.length; i++) {
+			this.resources[types[i]] += amounts[i];
+			//this.renderData[types[i]].value = this.resources[types[i]];
+		}
+		
+		document.dispatchEvent(dataChangedEvent);
+	};
+	
+	Player.prototype.decreaseResources = function(types, amounts) {
+		if (!types || !amounts) {
+			throw new Error('Some argument is missing.');
+		}
+		
+		if (types.length != amounts.length) {
+			throw new Error('The count of resources must match the count of the values.');
+		}
+	
+		for (var i = 0; i < types.length; i++) {
+			if (this.resources[types[i]] - amounts[i] < 0) {
+				throw new Error('Not enough resources to perform this operation.');
+			}
+		}
+		
+		for (var i = 0; i < types.length; i++) {
+			this.resources[types[i]] -= amounts[i];
+			//this.renderData[types[i]].value = this.resources[types[i]];
+		}
+		
+		document.dispatchEvent(dataChangedEvent);
+	};
+	
+	Player.prototype.getRenderData = function() {
+		if (this.renderData.length > 5) {
+			this.renderData.splice(5);
+		}
+		
+		var offset = 35;
+		for (var index in this.resources) {
+			var resText = new Renderable(this.resources[index], 50, offset, 0, 0, 'text');
+			
+			this.renderData.push(resText);
+			offset += 30;
+		}
+		return this.renderData;
+	};
+	
+	return Player;
+})();
+
+
+var Building = (function() {
+	function Building(imgSrc, x, y, width, height) {
+		this.img = new Image();
+		this.img.src = imgSrc;
+		this.x = x;
+		this.y = y;
+		this.width = width;
+		this.height = height;
+		this.build = false;
+		this.resourcesCost = {};
+		this.resourcesIncome = {};
+		this.renderData = [];
+		this.renderData.push(new Renderable(imgSrc, x, y, width, height, 'image'));
+	}
+	
+	/*
+	Building.prototype.tryToBuild = function(player, renderableItems, incomesItems) {
+		if (this.build) {
+			throw new Error('This building has already been built.');
+		}
+	
+		var resourcesAvailable = player.getResources();
+		var enoughResources = true;
+		for (var index in resourcesAvailable) {
+			if (resourcesAvailable[index] < this.resourcesCost[index]) {
+				enoughResources = false;
+			}
+		}
+		
+		if (!enoughResources) {
+			throw new Error('Not enough resources to create this building.');
+		}
+		
+		var types = [];
+		var amounts = [];
+		for (var index in this.resourcesCost) {
+			types.push(index);
+			amounts.push(this.resourcesCost[index]);
+		}
+		
+		console.log(types, amounts);
+		player.decreaseResources(types, amounts);
+		
+		renderableItems.push(this);
+		incomesItems.push(this);
+		
+		this.build = true;
+		document.dispatchEvent(dataChangedEvent);
+	};
+	*/
+	
+	Building.prototype.setResourcesCost = function(wood, ore, gold, crystal, gems) {
+		this.resourcesCost.wood = wood;
+		this.resourcesCost.ore = ore;
+		this.resourcesCost.gold = gold;
+		this.resourcesCost.crystal = crystal;
+		this.resourcesCost.gems = gems;
+	};
+	
+	Building.prototype.setResourcesIncome = function(wood, ore, gold, crystal, gems) {
+		this.resourcesIncome.wood = wood;
+		this.resourcesIncome.ore = ore;
+		this.resourcesIncome.gold = gold;
+		this.resourcesIncome.crystal = crystal;
+		this.resourcesIncome.gems = gems;
+	};
+	
+	Building.prototype.getResourcesIncome = function() {
+		return this.resourcesIncome;
+	};
+	
+	Building.prototype.getRenderData = function() {
+		return this.renderData;
+	};
+	
+	return Building;
+})();
+
+
+var Renderer = (function() {
+	function Renderer(renderableItems) {
+		this.canvas = document.createElement('canvas');
+		this.canvas.width = 640;
+		this.canvas.height = 480;
+		
+		this.context = this.canvas.getContext('2d');
+		document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+		
+		this.renderableItems = renderableItems;
+	}
+	
+	Renderer.prototype.getCanvas = function() {
+		return this.canvas;
+	};
+	
+	Renderer.prototype.renderFrame = function() {
+		var ctx = this.context;
+		ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+		//console.log(this.renderableItems);
+		
+		for (var index in this.renderableItems) {
+		
+			var renderableObject = this.renderableItems[index];
+			var renderableData = renderableObject.getRenderData();
+			//console.log(renderableData);
+				
+			for (var renderIndex in renderableData) {
+				var item = renderableData[renderIndex];
+				//console.log(item);
+				if (item.type == 'image') {
+					ctx.drawImage(item.image, item.x, item.y, item.width, item.height);
+				} else if (item.type == 'text') {
+					ctx.font = '16px Consolas';
+					ctx.fillText(item.text, item.x, item.y);
+				}
+			}
+		}
+		
+	};
+	
+	return Renderer;
+})();
+
+
+function Renderable(content, x, y, width, height, type) {
+	if (type == 'image') {
+		this.image = new Image();
+		this.image.src = content;
+		this.imageReady = false;
+		var that = this;
+		this.image.onload = function () {
+			that.imageReady = true;
+		};
+	} else if (type == 'text') {
+		this.text = content;
+	}
+	
+	this.type = type;
+	this.x = x;
+	this.y = y;
+	this.width = width;
+	this.height = height;
+}
+
+var buildingSet = function() {
+	this.buidlingTypes = ['Sawmill', 'Ore Mine', 'Gold Mine', 'Gem Mine', 'Crystal Mine'];
+	this.buildingTypeIndex = 0;
+	this.getRenderData = function() {
+		var renderData = [];
+		renderData.push(new Renderable('Build: ' + this.buidlingTypes[this.buildingTypeIndex], 250, 30, 0, 0, 'text'));
+		
+		return renderData;
+	}
+};
+
+var dataChangedEvent = new CustomEvent('datachanged', {'detail': 'Some data has been changed.'});
+var renderableItems = [];
+var buildings = [];
+
+var player = new Player();
+renderableItems.push(player);
+
+var renderer = new Renderer(renderableItems);
+
+var bs = new buildingSet();
+renderableItems.push(bs);
+
+var game = new Game(player, buildings, renderableItems, renderer);
+
+function changeBuildMode(btn) {
+	if (!game.buildMode) {
+		renderer.getCanvas().addEventListener('click', build);
+		game.buildMode = true;
+	} else {
+		renderer.getCanvas().removeEventListener('click', build);
+		game.buildMode = false;
+	}
+}
+
+function build(e) {
+	var src;
+	var buildingCost;
+	var buildingIncome;
+	switch(bs.buidlingTypes[bs.buildingTypeIndex]) {
+		case 'Sawmill': 
+			src = 'images/sawmill.png';
+			buildingCost = [50, 30, 200, 0, 0];
+			buildingIncome = [10, 0, 0, 0, 0];
+			break;
+		case 'Ore Mine': 
+			src = 'images/ore_mine.png'; 
+			buildingCost = [120, 60, 500, 0, 0];
+			buildingIncome = [0, 10, 0, 0, 0];
+			break;
+		case 'Gold Mine': 
+			src = 'images/gold_mine.png';
+			buildingCost = [200, 200, 200, 0, 0];
+			buildingIncome = [0, 0, 100, 0, 0];
+			break;
+		case 'Crystal Mine': 
+			src = 'images/crystal_mine.png';
+			buildingCost = [500, 400, 4000, 0, 0];
+			buildingIncome = [0, 0, 0, 5, 0];
+			break;
+		case 'Gem Mine': 
+			src = 'images/gem_mine.png';
+			buildingCost = [850, 720, 7000, 100, 0];
+			buildingIncome = [0, 0, 0, 0, 2];
+			break;
+	}
+	
+	var building = new Building(src, e.offsetX, e.offsetY, 32, 32);
+	building.setResourcesCost(
+		buildingCost[0],
+		buildingCost[1],
+		buildingCost[2],
+		buildingCost[3],
+		buildingCost[4]);
+	building.setResourcesIncome(
+		buildingIncome[0],
+		buildingIncome[1],
+		buildingIncome[2],
+		buildingIncome[3],
+		buildingIncome[4]);
+	//console.log(building);
+	
+	try {
+		game.tryToCreateBuilding(building);
+	} catch (e) {
+		var log = document.getElementById('log').innerText = e.message;
+		setTimeout(function(){
+			document.getElementById('log').innerText = '';
+		}, 2000);
+	}
+};
+
+document.addEventListener('datachanged', function() {
+	renderer.renderFrame();
+});
+
+document.addEventListener('mousewheel', function(e) {
+	
+	if (e.deltaY > 0) {
+		bs.buildingTypeIndex--;
+	} else {
+		bs.buildingTypeIndex++;
+	}
+	
+	if (bs.buildingTypeIndex < 0) {
+		bs.buildingTypeIndex = bs.buidlingTypes.length - 1;
+	}
+	
+	bs.buildingTypeIndex %= bs.buidlingTypes.length;
+	
+	document.dispatchEvent(dataChangedEvent);
+});
+
+</script>
+</body>
+</html>

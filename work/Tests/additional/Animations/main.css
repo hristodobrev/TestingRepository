@@ -1,0 +1,18 @@
+body {
+	padding: 0;
+	animation: reloadFlash linear .2s;
+}
+
+@keyframes reloadFlash {
+	0% {
+		opacity: 1;
+	}
+	
+	50% {
+		opacity: 0;
+	}
+	
+	100% {
+		opacity: 1;
+	}
+}

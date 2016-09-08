@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Platform game</title>
+<style>
+	canvas, button {
+		border: 1px solid #d3d3d3;
+		background: #f1f1f1;
+		margin: 10px auto;
+		display: block;
+	}
+	
+	p {
+		text-align: center;
+		font-family: Consolas;
+	}
+	
+	div#build-section {
+		display: none;
+	}
+</style>
+</head>
+<body>
+<button onclick="buildMode(this)">Build Mode</button>
+<div id="build-section">
+<p><label><input type="radio" name="type" value="goThrough">Go Through</label></p>
+<p><label><input type="radio" name="type" value="trampline">Trampline</label></p>
+<p><label><input type="radio" name="type" value="default">Default</label></p>
+</div>
+<!--<p id="log"></p>-->
+<script>
+var Game = (function() {
+	function Game(renderer, collisionHandler) {
+		this.renderer = renderer;
+		this.collisionHandler = collisionHandler;
+		this.previousFrameTime = Date.now();
+	}
+	
+	Game.prototype.start = function() {
+		gameLoop();
+		window.onbeforeunload = function () {
+			Game.prototype.save();
+		};
+	};
+	
+	function gameLoop() {
+		var currentFrameTime = Date.now();
+		var delta = currentFrameTime - this.previousFrameTime;
+		//console.log()
+		
+		player.speedX = 0;
+		player.speedY = 0;
+		player.goThrough = false;
+		
+		if (player.keysDown[37] && !player.leftCollision) {
+			player.speedX -= player.speed;
+		}
+		if (player.keysDown[38] && !player.jumped) {
+			player.jump(5);
+			player.jumped = true;
+		} else {
+			player.gravity = 0.5;
+		}
+		if (player.keysDown[39] && !player.rightCollision) {
+			player.speedX += player.speed;
+		}
+		if (player.keysDown[40]) {
+			player.goThrough = true;
+		}
+		
+		game.update(delta / 1000);
+		
+		//this.collisionHandler.checkPlayerCollisions();
+		
+		game.renderer.renderFrame();
+		
+		game.previousFrameTime = currentFrameTime;
+		requestAnimationFrame(gameLoop);
+	};
+	
+	Game.prototype.save = function() {
+		var objectsToSave = gameObjects.filter(function(o) {
+			return o !== player;
+		});
+		
+		localStorage.gameObjects = JSON.stringify(objectsToSave);
+		localStorage.playerPosition = JSON.stringify({x: player.x, y: player.y});
+	};
+	
+	Game.prototype.update = function(multiplier) {
+		//console.log('I was here');
+		for (var i in gameObjects) {
+			if (gameObjects[i].update) {
+				gameObjects[i].update(multiplier);
+			}
+		}
+	};
+	
+	return Game;
+})();
+
+var GameObject = (function() {
+	/*
+	var _x;
+	var _y;
+	var _width;
+	var _height;
+	var _color;
+	*/
+	
+	function GameObject(x, y, width, height, color) {
+		this.x = x;
+		this.y = y;
+		this.width = width;
+		this.height = height;
+		this.color = color;
+		if (arguments.length > 5) {
+			for (var i = 5; i < arguments.length; i++) {
+				switch(arguments[i]) {
+					case 'goThrough':
+						this.goThrough = true; 
+						this.color = '#d3d3d3'; 
+						break;
+					case 'trampline':
+						this.trampline = true;
+						this.color = 'red'; 
+						break;
+				}
+			}
+		}
+	}
+	
+	return GameObject;
+})();
+
+var Player = (function() {
+	function Player(x, y, width, height, color) {
+		GameObject.call(this, x, y, width, height, color);
+		this.defaultGravity = 0.5;
+		this.gravity = this.defaultGravity;
+		this.gravitySpeed = 0;
+		this.jumped = false;
+		this.goTrough = false;
+		this.rightCollision = false;
+		this.leftCollision = false;
+		this.speed = 3;
+		this.speedX = 0;
+		this.speedY = 0;
+		this.keysDown = [];
+		init(this);
+	}
+	
+	function init(player) {
+		document.addEventListener('keydown', function(e) {
+			player.keysDown[e.keyCode] = true;
+		});
+		
+		document.addEventListener('keyup', function(e) {
+			player.keysDown[e.keyCode] = false;
+		});
+	}
+	
+	Player.prototype = Object.create(GameObject.prototype);
+	
+	Player.prototype.constructor = Player;
+	
+	Player.prototype.jump = function (n) {
+		this.gravity = -n;
+	};
+	
+	Player.prototype.update = function(multiplier) {
+		/*this.speedX = 0;
+		this.speedY = 0;
+		this.goThrough = false;
+		
+		if (this.keysDown[37] && !this.leftCollision) {
+			this.speedX -= this.speed;
+		}
+		if (this.keysDown[38] && !this.jumped) {
+			this.jump(5);
+			this.jumped = true;
+		} else {
+			this.gravity = 0.5;
+		}
+		if (this.keysDown[39] && !this.rightCollision) {
+			this.speedX += this.speed;
+		}
+		if (this.keysDown[40]) {
+			this.goThrough = true;
+		}*/
+		
+		collisionHandler.checkPlayerCollisions();
+		
+		if (this.speedX > 0 && !this.leftCollision) {
+			this.x += this.speedX;	
+		}
+		
+		if (this.speedX < 0 && !this.rightCollision) {
+			this.x += this.speedX;
+		}
+		
+		this.gravitySpeed += this.gravity;
+		this.y += this.speedY + this.gravitySpeed;
+	};
+	
+	return Player;
+})();
+
+var CollisionHandler = (function() {
+	function CollisionHandler(player, playerLimitX, playerLimitY) {
+		this.player = player;
+		this.playerLimitX = playerLimitX;
+		this.playerLimitY = playerLimitY;
+	}
+	
+	CollisionHandler.prototype.checkPlayerCollisions = function() {
+		var maxY = this.playerLimitY - this.player.height;
+		if (this.player.y > maxY) {
+			this.player.y = maxY;
+			this.player.gravitySpeed = 0;
+			this.player.jumped = false;
+		}
+		
+		this.player.rightCollision = false;
+		this.player.leftCollision = false;
+		//console.log(gameObjects);
+		
+		for (var i in gameObjects) {
+			var obst = gameObjects[i];
+			//console.log(gameObjects);
+			
+			if (obst === this.player) {
+				continue;
+			}
+			
+			/*
+			if (this.player.y + this.player.height > obst.y + 1 && this.player.y < obst.y + obst.height) {
+				//console.log('im here');
+				if (this.player.x + this.player.width > obst.x && this.player.x < obst.x) {
+					//console.log('im here');
+					this.player.rightCollision = true;
+					//this.player.x = obst.x - this.player.width;
+				}
+				
+				if (this.player.x <= obst.x + obst.width && this.player.x > obst.x && !this.player.rightCollision) {
+					//console.log('im here');
+					this.player.leftCollision = true;
+					//this.player.x = obst.x + obst.width;
+				}
+			}
+			*/
+			
+			if (this.player.y + this.player.height > obst.y + 1 && this.player.y < obst.y + obst.height) {
+				//console.log('im here');
+				if (this.player.x + this.player.width > obst.x && this.player.x < obst.x) {
+					//console.log('im here');
+					this.player.rightCollision = true;
+					//this.player.x = obst.x - this.player.width;
+				}
+				
+				if (this.player.x < obst.x + obst.width && this.player.x > obst.x) {
+					//console.log('im here');
+					this.player.leftCollision = true;
+					//this.player.x = obst.x + obst.width;
+				}
+			}
+			
+			maxY = obst.y - this.player.height;
+			var goThrough = this.player.goThrough && obst.goThrough;
+			//console.log(goThrough);
+			if (this.player.x + this.player.width > obst.x && this.player.x < obst.x + obst.width) {
+				if (this.player.y > maxY && this.player.y < obst.y && !goThrough) {
+					if (!obst.trampline) {
+						this.player.y = maxY;
+						this.player.gravitySpeed = 0;
+						this.player.jumped = false;
+					} else {
+						//console.log(this.player.gravitySpeed);
+						if (this.player.gravitySpeed > 0) {
+							this.player.gravitySpeed = -Math.min(this.player.gravitySpeed * 3, 10);
+						} else {
+							this.player.y = maxY;
+							this.player.gravitySpeed = 0;
+							this.player.jumped = false;
+						}
+					}
+				}
+				
+				if (this.player.y <= obst.y + obst.height && this.player.y > obst.y && !obst.goThrough) {
+					this.player.y = obst.y + obst.height;
+					this.player.gravitySpeed = 0;
+					this.player.gravity = this.player.defaultGravity;
+				}
+			}
+		}
+	};
+	
+	return CollisionHandler;
+})();
+
+var Renderer = (function() {
+	function Renderer() {
+		//this.gameObjects = gameObjects;
+		this.canvas = document.createElement('canvas');
+		this.canvas.height = 480;
+		this.canvas.width = 640;
+		
+		this.context = this.canvas.getContext('2d');
+		document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+	}
+	
+	Renderer.prototype.getPlayerLimits = function() {
+		return [this.canvas.width, this.canvas.height];
+	};
+	
+	Renderer.prototype.renderFrame = function(multiplier) {
+		gameObjects = gameObjects.filter(function (n) {
+			return n != undefined;
+		});
+		
+		this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+	
+		for (var i in gameObjects) {
+			var obj = gameObjects[i];
+			this.context.fillStyle = obj.color;
+			this.context.fillRect(obj.x, obj.y, obj.width, obj.height);
+		}
+	};
+	
+	return Renderer;
+})();
+var gameObjects = [];
+if (localStorage.gameObjects) {
+	var savedObjects = JSON.parse(localStorage.gameObjects);
+	for (var i in savedObjects) {
+		gameObjects.push(savedObjects[i]);
+	}
+}
+/*
+var obst1 = new GameObject(100, 455, 10, 10, 'green');
+var obst2 = new GameObject(110, 455, 10, 10, '#d3d3d3', 'goThrough');
+var obst3 = new GameObject(120, 455, 10, 10, '#d3d3d3', 'goThrough');
+var obst4 = new GameObject(130, 455, 10, 10, 'green');
+var obst5 = new GameObject(140, 455, 10, 10, 'green');
+var obst6 = new GameObject(50, 455, 10, 10, 'red', 'goThrough', 'trampline');
+gameObjects.push(obst1, obst2, obst3, obst4, obst5, obst6);
+*/
+
+var player = new Player(50, 200, 10, 10, 'green');
+if (localStorage.playerPosition) {
+	var pos = JSON.parse(localStorage.playerPosition);
+	player.x = pos.x;
+	player.y = pos.y;
+}
+gameObjects.push(player);
+
+var renderer = new Renderer();
+
+var playerLimits = renderer.getPlayerLimits();
+var collisionHandler = new CollisionHandler(player, playerLimits[0], playerLimits[1]);
+
+var game = new Game(renderer, collisionHandler);
+game.start();
+
+function buildMode(btn) {
+	if (btn.innerText == 'Build Mode') {
+		btn.innerText = 'Default Mode';
+		document.getElementById('build-section').style.display = 'block';
+		renderer.canvas.addEventListener('click', createObject);
+	} else {
+		btn.innerText = 'Build Mode';
+		document.getElementById('build-section').style.display = 'none';
+		renderer.canvas.removeEventListener('click', createObject);
+	}
+}
+
+function createObject(e) {
+	var x = e.offsetX;
+	var y = e.offsetY;
+	
+	var found = false;
+	for (var i in gameObjects) {
+		var obj = gameObjects[i];
+		if (x > obj.x && x < obj.x + obj.width && y > obj.y && y < obj.y + obj.height) {
+			found = true;
+			delete gameObjects[i];
+			break;
+		}
+	}
+	
+	if (found) {
+		return;
+	}
+
+	x = x - x % 10;
+	y = y - y % 10;
+	
+	var btns = document.getElementsByName('type');
+	var property = 'default';
+	for (var i = 0; i < btns.length; i++) {
+		if (btns[i].checked) {
+			property = btns[i].value;
+		}
+	}
+	
+	//console.log(property);
+	
+	var obj = new GameObject(x, y, 10, 10, 'dodgerblue', property);
+	gameObjects.push(obj);
+}
+</script>
+</body>
+</html>

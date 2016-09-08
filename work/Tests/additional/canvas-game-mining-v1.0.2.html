@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Mining Game</title>
+<style>
+	canvas, button {
+		border: 1px solid #d3d3d3;
+		background: #f1f1f1;
+		margin: 10px auto;
+		display: block;
+	}
+</style>
+</head>
+<body onload="startGame()">
+<button onclick="game.save()">Save</button>
+<button onclick="game.generateWorld()">Generate World</button>
+<script>
+function startGame() {
+	game.start();
+	main();
+}
+
+var then = Date.now();
+var w = window;
+requestAnimationFrame = w.requestAnimationFrame ||
+w.webkitRequestAnimationFrame ||
+w.msRequestAnimationFrame ||
+w.mozRequestAnimationFrame;
+var obstacles = [];
+var types = ['dirt', 'stone', 'gold', 'diamond'];
+var typesIndex = 0;
+
+var game = {
+	canvas: document.createElement('canvas'),
+	start: function() {
+		this.canvas.width = 640;
+		this.canvas.height = 480;
+		this.mouseX = 0;
+		this.mouseY = 0;
+		this.context = this.canvas.getContext('2d');
+		document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+		
+		if (localStorage.obstacles) {
+			obstacles = JSON.parse(localStorage.obstacles);
+			obstacles = obstacles.filter(function (n) {
+				return n != undefined;
+			});
+			for (var i = 0; i < obstacles.length; i++) {
+				var obst = obstacles[i];
+				obst.render = function () {
+					var ctx = game.context;
+					var img = new Image();
+					img.src = this.color;
+					ctx.drawImage(img, this.x, this.y, this.width, this.height);
+				};
+			}
+		} else {
+			game.seed();
+			/*
+			obstacles.push(
+				new Obstacle(200, 450, 10, 10, 'dodgerblue'),
+				new Obstacle(210, 450, 10, 10, 'dodgerblue'),
+				new Obstacle(230, 450, 10, 10, 'dodgerblue'),
+				new Obstacle(210, 460, 10, 10, 'dodgerblue'),
+				new Obstacle(210, 470, 10, 10, 'dodgerblue'),
+				new Obstacle(220, 470, 10, 10, 'dodgerblue'),
+				new Obstacle(230, 470, 10, 10, 'dodgerblue')
+			);
+			*/
+		}
+		
+		if (localStorage.invertory) {
+			player.invertory = JSON.parse(localStorage.invertory);
+		}
+		
+		
+		//this.interval = setInterval(game.update);
+		
+		window.addEventListener('keydown', function(e) {
+			game.keys = game.keys || [];
+			game.keys[e.keyCode] = true;
+		});
+		window.addEventListener('keyup', function(e) {
+			game.keys = game.keys || [];
+			game.keys[e.keyCode] = false;
+		});
+		window.addEventListener('mousewheel', function(e) {
+			if (e.deltaY > 0) {
+				typesIndex--;
+			} else {
+				typesIndex++;
+			}
+			
+			if (typesIndex < 0) {
+				typesIndex = types.length - 1;
+			}
+			
+			if (typesIndex >= types.length) {
+				typesIndex = 0;
+			}
+			
+			player.buildType = types[typesIndex];
+		});
+		window.onbeforeunload = function () {
+			game.save();
+		};
+		this.canvas.addEventListener('click', function(e) {
+			var found = false;
+			var x = e.offsetX;
+			var y = e.offsetY;
+			var maxDistance = player.width * 5;
+			var distance = Math.sqrt(
+				(game.mouseX - (player.x + (player.width / 2))) * (game.mouseX - (player.x + (player.width / 2))) +
+				(game.mouseY - (player.y + (player.height / 2))) * (game.mouseY - (player.y + (player.height / 2)))
+			);
+			if (maxDistance < distance) {
+				return;
+			}
+			
+			for (var i = 0; i < obstacles.length; i++) {
+				var obst = obstacles[i];
+				if (!obst) {
+					continue;
+				}
+				if (x > obst.x && x < obst.x + obst.width &&
+					y > obst.y && y < obst.y + obst.height
+				) {
+					switch (obstacles[i].type) {
+						case 'dirt':
+							player.invertory[0]++; break;
+						case 'stone':
+							player.invertory[1]++; break;
+						case 'gold':
+							player.invertory[2]++; break;
+						case 'diamond':
+							player.invertory[3]++; break;
+					}
+					delete obstacles[i];
+					found = true;
+				}
+			}
+			
+			if (!found) {
+				var obstX = x - x % 20;
+				var obstY = y - y % 20;
+				var type = types[typesIndex];
+				
+				var newObst = new Obstacle(obstX, obstY, 20, 20, type);
+				if (player.invertory[typesIndex] > 0) {
+					player.invertory[typesIndex]--;
+					obstacles.push(newObst);
+				}
+			}
+		});
+		this.canvas.addEventListener('mousemove', function(e) {
+			game.mouseX = e.offsetX;
+			game.mouseY = e.offsetY;
+		});
+	},
+	update: function (multiplier) {
+		game.clear();
+		
+		player.speedX = 0;
+		player.speedY = 0;
+		if (game.keys && game.keys[37]) {
+			player.speedX = -player.speed * multiplier;
+		}
+		if (game.keys && game.keys[38] && !player.hasJumped) {
+			player.accelerate(-700 * multiplier);
+			player.hasJumped = true;
+		} else {
+			player.accelerate(50 * multiplier);
+		}
+		if (game.keys && game.keys[39]) {
+			player.speedX = player.speed * multiplier;
+		}
+		
+		player.update();
+		player.render();
+		
+		for (var i = 0; i < obstacles.length; i++) {
+			if (!obstacles[i]) {
+				continue;
+			}
+			
+			obstacles[i].render();
+		}
+		
+		var maxDistance = player.width * 5;
+		var distance = Math.sqrt(
+			(game.mouseX - (player.x + (player.width / 2))) * (game.mouseX - (player.x + (player.width / 2))) +
+			(game.mouseY - (player.y + (player.height / 2))) * (game.mouseY - (player.y + (player.height / 2)))
+		);
+		if (maxDistance >= distance) {
+			var x = game.mouseX - game.mouseX % 20;
+			var y = game.mouseY - game.mouseY % 20;
+			game.context.fillStyle = 'rgba(0, 0, 0, 0.5)';
+			game.context.fillRect(x, y, 20, 20);
+		}
+		
+		game.context.font = '14px Consolas';
+		game.context.fillStyle = 'black';
+		var text = 'Diamond: ' + player.invertory[3] +  '   Gold: ' + player.invertory[2] + '   Stone: ' + player.invertory[1] + '   Dirt: ' + player.invertory[0] + '   Build: ' + player.buildType;
+		game.context.fillText(text, 20, 20);
+	},
+	clear: function () {
+		this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+	},
+	save: function () {
+		var data = JSON.stringify(obstacles);
+		localStorage.obstacles = data;
+		localStorage.invertory = JSON.stringify(player.invertory);
+	},
+	generateWorld: function () {
+		var cost;
+		switch (typesIndex) {
+			case 0: cost = 50; break;
+			case 1: cost = 30; break;
+			case 2: cost = 3; break;
+			case 3: cost = 1; break;
+			default: cost = 0;
+		}
+		
+		if (player.invertory[typesIndex] >= cost) {
+			player.invertory[typesIndex] -= cost;
+			obstacles = [];
+			game.seed();
+			
+			var maxY = Number.MAX_VALUE;
+			obstacles.map(function (e) {
+				if (e.y < maxY) {
+					maxY = e.y;
+				}
+			});
+			
+			player.y = maxY - player.height;
+		}
+	},
+	seed: function () {
+		console.log(rows);
+		var rows = Math.floor(Math.random() * 8) + 3;
+		console.log(rows);
+		for (var y = 480 - rows * 20; y <= 480; y += 20) {
+			for (var x = 0; x <= 640; x += 20) {
+				var chance = Math.floor(Math.random() * 100);
+				var type = 'dirt';
+				if (chance < 30) {
+					type = 'stone';
+				}
+				if (chance < 2) {
+					type = 'gold';
+				}
+				if (chance < 1) {
+					type = 'diamond';
+				}
+				
+				obstacles.push(new Obstacle(x, y, 20, 20, type));
+			}
+		}
+	}
+};
+
+var player = {
+	x: 20,
+	y: 140,
+	width: 20,
+	height: 20,
+	color: 'tomato',
+	speed: 200,
+	speedX: 0,
+	speedY: 0,
+	gravity: 0.1,
+	gravitySpeed: 0.98,
+	bounce: 0,
+	buildType: types[typesIndex],
+	invertory: {0:0, 1:0, 2:0, 3:0},
+	collisionLeft: false,
+	collisionRight: false,
+	collisionTop: false,
+	hasJumped: false,
+	update: function () {
+		player.collisionLeft = false;
+		player.collisionRight = false;
+		player.collisionTop = false;
+		player.checkCollisions();
+		
+		this.gravitySpeed += this.gravity;
+		if (this.x + this.speedX > this.x && !this.collisionRight) {
+			this.x += this.speedX;
+		}
+		
+		if (this.x + this.speedX < this.x && !this.collisionLeft) {
+			this.x += this.speedX;
+		}
+		
+		this.y += this.speedY + this.gravitySpeed;
+		
+		var bottom = game.canvas.height - this.height;
+		if (this.y > bottom) {
+			this.y = bottom;
+			this.gravitySpeed = -(this.gravitySpeed * this.bounce);
+			this.hasJumped = false;
+		}
+		
+		for (var i = 0; i < obstacles.length; i++) {
+			var obst = obstacles[i];
+			if (!obst) {
+				continue;
+			}
+			
+			if (player.x + player.width > obst.x && player.x < obst.x + obst.width) {
+				
+				if (player.y + player.height > obst.y && player.y < obst.y) {
+					player.y = obst.y - player.height;
+					this.gravitySpeed = -(this.gravitySpeed * this.bounce);
+					player.hasJumped = false;
+					
+				}
+				
+				if (player.y < obst.y + obst.height && player.y > obst.y) {
+					player.y = obst.y + obst.height;
+					player.hasJumped = true;
+					player.gravity = 0.1;
+					player.gravitySpeed = 0;
+				}
+			}
+		}
+	},
+	accelerate: function (n) {
+		this.gravity = n;
+	},
+	render: function () {
+		var ctx = game.context;
+		ctx.fillStyle = this.color;
+		ctx.fillRect(this.x, this.y, this.width, this.height, this.color);
+	},
+	checkCollisions: function () {		
+		for (var i = 0; i < obstacles.length; i++) {
+			var obst = obstacles[i];
+			if (!obst) {
+				continue;
+			}
+			
+			if (player.y + player.height - 1 > obst.y && player.y < obst.y + obst.height) {
+				if (player.x < obst.x + obst.width && player.x + player.width >= obst.x) {
+					player.collisionRight = true;
+				}
+				
+				if (player.x > obst.x && player.x <= obst.x + obst.width) {
+					player.collisionLeft = true;
+				}
+			}
+		}
+	}
+};
+
+function Obstacle(x, y, width, height, type) {
+	this.x = x;
+	this.y = y;
+	this.width = width;
+	this.height = height;
+	this.type = type;
+	this.color = 'images/dirt.png';
+	switch(type) {
+		case 'stone':
+			this.color = 'images/stone.png'; break;
+		case 'gold':
+			this.color = 'images/gold.png'; break;
+		case 'diamond':
+			this.color = 'images/diamond.png'; break;
+	}
+	this.render = function () {
+		var ctx = game.context;
+		var img = new Image();
+		img.src = this.color;
+		ctx.drawImage(img, this.x, this.y, this.width, this.height);
+	};
+}
+
+function checkClickedItem(x, y) {
+	for (var i = 0; i < obstacles.length; i++) {
+		var obst = obstacles[i];
+		if (x > obst.x && x < obst.x + obst.width &&
+			y > obst.y && y < obst.y + obst.height
+		) {
+			delete obstacles[i];
+		}
+	}
+}
+
+function main() {
+	var now = Date.now();
+	var delta = now - then;
+	
+	game.update(delta / 1000);
+	
+	then = now;
+	
+	requestAnimationFrame(main);
+}
+</script>
+</body>
+</html>
