@@ -62,8 +62,7 @@ var game = {
 				var obst = obstacles[i];
 				obst.render = function () {
 					var ctx = game.context;
-					var img = new Image();
-					img.src = this.color;
+					var img = images[this.type];
 					ctx.drawImage(img, this.x, this.y, this.width, this.height);
 				};
 			}
@@ -250,9 +249,9 @@ var game = {
 		}
 	},
 	seed: function () {
-		console.log(rows);
+		//console.log(rows);
 		var rows = Math.floor(Math.random() * 8) + 3;
-		console.log(rows);
+		//console.log(rows);
 		for (var y = 480 - rows * 20; y <= 480; y += 20) {
 			for (var x = 0; x <= 640; x += 20) {
 				var chance = Math.floor(Math.random() * 100);
@@ -331,7 +330,7 @@ var player = {
 				}
 				
 				if (player.y < obst.y + obst.height && player.y > obst.y) {
-					player.y = obst.y + obst.height;
+					//player.y = obst.y + obst.height;
 					player.hasJumped = true;
 					player.gravity = 0.1;
 					player.gravitySpeed = 0;

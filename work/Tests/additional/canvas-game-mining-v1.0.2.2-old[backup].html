@@ -17,31 +17,11 @@
 <script>
 function startGame() {
 	game.start();
-	main();
 }
 
-var then = Date.now();
-var w = window;
-requestAnimationFrame = w.requestAnimationFrame ||
-w.webkitRequestAnimationFrame ||
-w.msRequestAnimationFrame ||
-w.mozRequestAnimationFrame;
 var obstacles = [];
 var types = ['dirt', 'stone', 'gold', 'diamond'];
 var typesIndex = 0;
-var images = {
-	init: function() {
-		this.dirt = new Image();
-		this.dirt.src = 'images/dirt.png';
-		this.stone = new Image();
-		this.stone.src = 'images/stone.png';
-		this.gold = new Image();
-		this.gold.src = 'images/gold.png';
-		this.diamond = new Image();
-		this.diamond.src = 'images/diamond.png';
-	}
-};
-images.init();
 
 var game = {
 	canvas: document.createElement('canvas'),
@@ -62,9 +42,8 @@ var game = {
 				var obst = obstacles[i];
 				obst.render = function () {
 					var ctx = game.context;
-					var img = new Image();
-					img.src = this.color;
-					ctx.drawImage(img, this.x, this.y, this.width, this.height);
+					ctx.fillStyle = this.color;
+					ctx.fillRect(this.x, this.y, this.width, this.height);
 				};
 			}
 		} else {
@@ -86,8 +65,7 @@ var game = {
 			player.invertory = JSON.parse(localStorage.invertory);
 		}
 		
-		
-		//this.interval = setInterval(game.update);
+		this.interval = setInterval(game.update);
 		
 		window.addEventListener('keydown', function(e) {
 			game.keys = game.keys || [];
@@ -170,22 +148,22 @@ var game = {
 			game.mouseY = e.offsetY;
 		});
 	},
-	update: function (multiplier) {
+	update: function () {
 		game.clear();
 		
 		player.speedX = 0;
 		player.speedY = 0;
 		if (game.keys && game.keys[37]) {
-			player.speedX = -player.speed * multiplier;
+			player.speedX = -player.speed;
 		}
 		if (game.keys && game.keys[38] && !player.hasJumped) {
-			player.accelerate(-500 * multiplier);
+			player.accelerate(-4);
 			player.hasJumped = true;
 		} else {
-			player.accelerate(50 * multiplier);
+			player.accelerate(0.1);
 		}
 		if (game.keys && game.keys[39]) {
-			player.speedX = player.speed * multiplier;
+			player.speedX = player.speed;
 		}
 		
 		player.update();
@@ -279,7 +257,7 @@ var player = {
 	width: 20,
 	height: 20,
 	color: 'tomato',
-	speed: 200,
+	speed: 0.5,
 	speedX: 0,
 	speedY: 0,
 	gravity: 0.1,
@@ -373,11 +351,18 @@ function Obstacle(x, y, width, height, type) {
 	this.width = width;
 	this.height = height;
 	this.type = type;
-	
+	this.color = 'dirt.png';
+	switch(type) {
+		case 'stone':
+			this.color = 'stone.png'; break;
+		case 'gold':
+			this.color = 'gold.png'; break;
+		case 'diamond':
+			this.color = 'diamond.png'; break;
+	}
 	this.render = function () {
 		var ctx = game.context;
-		var img = images[this.type];
-		ctx.drawImage(img, this.x, this.y, this.width, this.height);
+		ctx.drawImage(this.color, this.x, this.y, this.width, this.height);
 	};
 }
 
@@ -390,17 +375,6 @@ function checkClickedItem(x, y) {
 			delete obstacles[i];
 		}
 	}
-}
-
-function main() {
-	var now = Date.now();
-	var delta = now - then;
-	
-	game.update(delta / 1000);
-	
-	then = now;
-	
-	requestAnimationFrame(main);
 }
 </script>
 </body>
