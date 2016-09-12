@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Circles</title>
+<style>
+	canvas, button {
+		border: 1px solid #d3d3d3;
+		background: #f1f1f1;
+		margin: 10px auto;
+		display: block;
+	}
+</style>
+<script>
+	function init() {
+		document.addEventListener('keydown', function(e) {
+			//console.log(e.keyCode);
+			keysDown[e.keyCode] = true;
+		});
+		
+		document.addEventListener('keyup', function(e) {
+			keysDown[e.keyCode] = false;
+		});
+	
+		function Circle(x, y, r, color) {
+			this.x = x;
+			this.y = y;
+			this.r = r;
+			this.color = color;
+		}
+		
+		function draw() {
+			context.clearRect(0, 0, canvas.width, canvas.height);
+			context.beginPath();
+			context.fillStyle = player.color;
+			context.arc(player.x, player.y, player.r, 0, Math.PI * 2);
+			context.fill();
+			
+			for (var i in circles) {
+				var circle = circles[i];
+				context.beginPath();
+				context.fillStyle = circle.color;
+				context.arc(circle.x, circle.y, circle.r, 0, Math.PI * 2);
+				context.fill();
+			}
+		}
+		
+		function move() {
+			if (keysDown[37]) {
+				player.x -= player.speed;
+			}
+			if (keysDown[38]) {
+				player.y -= player.speed;
+			}
+			if (keysDown[39]) {
+				player.x += player.speed;
+			}
+			if (keysDown[40]) {
+				player.y += player.speed;
+			}
+		}
+		
+		function checkCollisions() {
+			for (var i in circles) {
+				var circle = circles[i];
+				var distance = (player.x - circle.x) * (player.x - circle.x) + 
+				(player.y - circle.y) * (player.y - circle.y);
+				distance = Math.sqrt(distance);
+				var largeRadius = Math.max(player.r, circle.r);
+				if (distance < largeRadius) {
+					if (player.r > circle.r) {
+						player.r += circle.r / 4;
+						player.speed = 50 / player.r;
+						delete circles[i];
+						circles = circles.filter(function(c) {
+							return c != undefined;
+						});
+					} else {
+						document.body.innerHTML = '<h1>You have died.</h1>';
+					}
+				}
+			}
+		}
+		
+		function gameLoop() {
+			move();
+			checkCollisions();
+			draw();
+		}
+		
+		function generateRandomCircle() {
+			var radius = Math.floor(Math.random() * 20);
+			var x = radius + Math.floor(Math.random() * (canvas.width - radius));
+			var y = radius + Math.floor(Math.random() * (canvas.height - radius));
+			var circle = new Circle(x, y, radius, 'tomato');
+			circles.push(circle);
+		}
+		
+		var canvas = document.createElement('canvas');
+		canvas.width = 640;
+		canvas.height = 480;
+		var context = canvas.getContext('2d');
+		document.body.insertBefore(canvas, document.body.childNodes[0]);
+		
+		var keysDown = [];
+		var circles = [];
+		
+		var player = {
+			x: 50,
+			y: 50,
+			speed: 50 / 10,
+			r: 10,
+			color: 'dodgerblue'
+		};
+		
+		for (var i = 0; i < 100; i++) {
+			generateRandomCircle();
+		}
+		
+		var interval = setInterval(gameLoop, 20);
+	}	
+</script>
+</head>
+<body onload="init()">
+	
+</body>
+</html>
