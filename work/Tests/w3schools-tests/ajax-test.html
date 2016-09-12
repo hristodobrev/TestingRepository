@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>AJAX Test</title>
+<script src="../jquery-3.1.0.js"></script>
+<script>
+var jq = $.noConflict();
+jq(function() {
+	jq("button").click(function() {
+		jq("#demo").load("sample_text.txt", function(responseText, statusText, xhr) {
+			console.log("Data loaded.");
+			console.log(responseText);
+			console.log(statusText);
+			console.log("Status: " + xhr.status + " " + xhr.statusText);
+		});
+		jq.get("demo_test.asp", function(data, status) {
+			alert("Data: " + data + "\nStatus: " + status);
+		});
+	});
+});
+</script>
+</head>
+<body>
+	<div id="demo">
+		<h2>Let jQuery AJAX change this text</h2>
+	</div>
+	<button>Get External Content</button>
+</body>
+</html>

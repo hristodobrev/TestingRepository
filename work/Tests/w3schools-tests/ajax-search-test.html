@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>AJAX Search</title>
+<script src="../jquery-3.1.0.js"></script>
+<script>
+	function showResults(searchKey) {
+		loadDoc('songs.xml', writeData, searchKey);
+	}
+	
+	function writeData(xml, searchKey) {
+		//console.log('I am here');
+		var xmlDoc = xml.responseXML;
+		var songs = [];
+		document.getElementById('results').innerHTML = "";
+		
+		if (searchKey.trim() == "") {
+			return;
+		}
+		
+		var artists = xmlDoc.getElementsByTagName('artist');
+		var titles = xmlDoc.getElementsByTagName('title');
+		for (var i = 0; i < artists.length; i++) {
+			var song = artists[i].childNodes[0].nodeValue + " - " + titles[i].childNodes[0].nodeValue;
+			var lowSong = song.toLowerCase();
+			searchKey = searchKey.toLowerCase();
+			//console.log(lowSong, searchKey, lowSong.indexOf(searchKey));
+			var startIndex = lowSong.indexOf(searchKey);
+			if (startIndex != -1) {
+				var firstPart = song.substring(0, startIndex) + '<span style="color:orange;background:#f1f1f1">';
+				var keyWord = song.substring(startIndex, startIndex + searchKey.length);
+				var secondPart = '</span>' + song.substring(startIndex + searchKey.length);
+				var resultSong = firstPart + keyWord + secondPart;
+				songs.push(resultSong);
+			}
+		}
+		//console.log(songs);
+		
+		for (var i = 0; i < songs.length; i++) {
+			document.getElementById('results').innerHTML += "<p>" + songs[i] + "</p>";
+		}
+	}
+	
+	function loadDoc(url, cfunc, searchKey) {
+		var xhttp = new XMLHttpRequest();
+		
+		xhttp.open('GET', url, true);
+		xhttp.send();
+		
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				cfunc(this, searchKey);
+			}
+		};
+	}
+</script>
+</head>
+<body>
+	<form action="">
+		<input type="text" id="txt" onkeyup="showResults(this.value)" />
+	</form>
+	<div id="results">
+	
+	</div>
+</body>
+</html>

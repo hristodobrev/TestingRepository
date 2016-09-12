@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>AJAX Request</title>
+<script src="../jquery-3.1.0.js"></script>
+<script>
+$(function() {
+	$("button").click(function() {
+		loadDoc('sample_text.txt', myFunc);
+	});
+	
+	function myFunc(xhttp) {
+		$("#demo").html(xhttp.responseText);
+	}
+});
+
+function loadDoc(url, cfunc) {
+		var xhttp = new XMLHttpRequest();
+		xhttp.open('GET', url, true);
+		xhttp.send();
+		
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				cfunc(this);
+			}
+		};
+	}
+
+function getSongs() {
+	loadDoc('songs.xml', writeSongs);
+	
+	function writeSongs(xhttp) {
+		console.log('im here');
+		var xmlDoc = xhttp.responseXML;
+		var songs = "<h2>Songs</h2>";
+		var artists = xmlDoc.getElementsByTagName("artist");
+		var titles = xmlDoc.getElementsByTagName("title");
+		for (var i = 0; i < artists.length; i++) {
+			songs += "<p>" + artists[i].childNodes[0].nodeValue + " - " + titles[i].childNodes[0].nodeValue +
+			"</p>";
+		}
+		document.getElementById('songs').innerHTML = songs;
+	}
+}
+
+function func() {
+	console.log('I work!');
+}
+</script>
+</head>
+<body>
+	<div id="demo">
+		<h2>Let jQuery AJAX change this text</h2>
+	</div>
+	<div id="songs">
+	</div>
+	<button>Get External Content</button><br>
+	<a href="javascript:func()">Read from other file</a><br>
+	<a href="javascript:getSongs()">Get songs</a>
+</body>
+</html>

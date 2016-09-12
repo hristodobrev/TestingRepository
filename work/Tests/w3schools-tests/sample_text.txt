@@ -1,0 +1,2 @@
+<h2>This is heading from outside!</h2>
+<p>And this is paragraph from outside!</p>
