@@ -1,3 +1,3 @@
 # TestingRepository
 This is the next try.
-![alt tag](https://github.com/hristodobrev/TestingRepository/edit/master/test.jpg)
+![Temple](https://github.com/hristodobrev/TestingRepository/blob/master/test.jpg)
