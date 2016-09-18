@@ -1,0 +1,25 @@
+{
+  "name": "tests",
+  "version": "1.0.0",
+  "description": "Some test description",
+  "main": "server.js",
+  "dependencies": {
+    "express": "^4.14.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "SomeCommad",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "gitrepourl"
+  },
+  "keywords": [
+    "kw1",
+    "kw2",
+    "kw3"
+  ],
+  "author": "Hristo Dobrev",
+  "license": "UNLICENSED"
+}
