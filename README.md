@@ -3,17 +3,11 @@
 # Readme Markup Examples
 
 ### Table of contents
-[Text](#text)
-
-[Lists](#lists)
-
-[Links](#links)
-
-[Code Syntax](#code-syntax)
-
-[Tables](#tables)
-
-
+[Text](#text)--
+[Lists](#lists)--
+[Links](#links)--
+[Code Syntax](#code-syntax)--
+[Tables](#tables)--
 [Images](#images)
 
 # Text
