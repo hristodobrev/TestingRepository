@@ -27,18 +27,19 @@
   1. Some other nested item
   
 # Links
-[Link to Testing Repository] (https://github.com/hristodobrev/TestingRepository Testing Repository)
+[Link to Testing Repository](https://github.com/hristodobrev/TestingRepository Testing Repository)
 
 # Code Syntax
 
 ```javascript
+// This code is in JavaScript
 var a = 5;
 var b = 7;
 console.log(a + b) // Logs 12
 ```
 
 ```python
-s = "Some text int python"
+s = "Some text in python"
 print s
 ```
 
@@ -59,6 +60,7 @@ Horizontal Rules
 ***
 
 > This is some blockquote
+
 > which can be spread across the lines.
 
 # Images
