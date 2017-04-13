@@ -3,21 +3,21 @@
 # Readme Markup Examples
 
 ### Table of contents
-[Text](#text)
-[Lists](#lists)
-[Links](#links)
-[Code Syntax](#code-syntax)
-[Tables](#tables)
+[Text](#text)  
+[Lists](#lists)  
+[Links](#links)  
+[Code Syntax](#code-syntax)  
+[Tables](#tables)  
 [Images](#images)
 
 # Text
-**This text is bold.**
-*This text is emphasized*
-~~This text is strike through~~
+**This text is bold.**  
+*This text is emphasized*  
+~~This text is strike through~~  
 
 This is some text in one line.
 
-This is new paragraph on new line.
+This is new paragraph on new line.  
 This line belongs to the same paragraph.
 
 # Lists
