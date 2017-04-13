@@ -22,7 +22,7 @@
 
 ## Ordered
 1. Some item
-..* Some nested item
+  * Some nested item
 2. Some other item
 
 # Images
