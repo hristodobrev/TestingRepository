@@ -13,7 +13,6 @@
 ## Unordered
 * Some item
 ..*Some nested item
-..*Some more nested item
 * Some other item
 
 
