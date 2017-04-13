@@ -12,7 +12,7 @@
 # Lists
 ## Unordered
 * Some item
-..*Some nested item
+..* Some other item
 * Some other item
 
 
