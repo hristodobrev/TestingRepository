@@ -4,9 +4,16 @@
 
 ### Table of contents
 [Text](#text)
+
 [Lists](#lists)
+
 [Links](#links)
+
 [Code Syntax](#code-syntax)
+
+[Tables](#tables)
+
+[Images](#images)
 
 # Text
 **This text is bold.**
